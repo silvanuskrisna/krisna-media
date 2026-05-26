@@ -1,7 +1,12 @@
--- Fix: New users get role 'member', not 'admin'
--- Jalankan SQL ini di Supabase SQL Editor
+-- Fix: New signups get role 'member' instead of 'admin'
+-- Jalankan SQL ini di Supabase SQL Editor (Dashboard → SQL Editor → New Query)
 
--- 1. Update trigger function: default role = member
+-- 1. Update CHECK constraint di tabel profiles agar menerima role 'member'
+ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+ALTER TABLE profiles ADD CONSTRAINT profiles_role_check
+  CHECK (role IN ('member', 'admin', 'superadmin'));
+
+-- 2. Update trigger function: default role = member
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 BEGIN
@@ -10,11 +15,11 @@ BEGIN
   RETURN NEW;
 END;$$;
 
--- 2. Update your existing profile to superadmin (ganti dengan email Kak Ivan)
--- Cari dulu user ID-nya: SELECT id, email FROM auth.users WHERE email = 'silvanuskrisna@gmail.com';
--- Lalu jalankan: UPDATE profiles SET role = 'superadmin' WHERE id = 'user-id-dari-query-di-atas';
-
--- Atau gabungin jadi satu query:
+-- 3. Update your existing profile to superadmin (ganti email sesuai akun Kak Ivan)
 UPDATE public.profiles
 SET role = 'superadmin'
 WHERE id = (SELECT id FROM auth.users WHERE email = 'silvanuskrisna@gmail.com' LIMIT 1);
+
+-- 4. (Opsional) Update existing admin profiles
+-- Jika ada admin lain, jalankan:
+-- UPDATE profiles SET role = 'admin' WHERE role IS NULL;

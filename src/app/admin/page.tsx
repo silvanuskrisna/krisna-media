@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, Calendar, MessageSquare, TrendingUp, TriangleAlert, ExternalLink } from 'lucide-react'
+import { Package, Calendar, MessageSquare, Users, TrendingUp, TriangleAlert, ExternalLink } from 'lucide-react'
 import { formatDate, formatPrice, statusColors } from '@/lib/utils'
 import type { Booking } from '@/lib/types'
 
@@ -15,6 +15,7 @@ interface Stats {
   completedBookings: number
   cancelledBookings: number
   totalTestimonials: number
+  totalMembers: number
 }
 
 export default function AdminDashboard() {
@@ -26,6 +27,7 @@ export default function AdminDashboard() {
     completedBookings: 0,
     cancelledBookings: 0,
     totalTestimonials: 0,
+    totalMembers: 0,
   })
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,15 +36,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [productsRes, bookingsRes, testimonialsRes] = await Promise.all([
+        const [productsRes, bookingsRes, testimonialsRes, membersRes] = await Promise.all([
           supabase.from('products').select('id', { count: 'exact', head: true }),
           supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(5),
           supabase.from('testimonials').select('id', { count: 'exact', head: true }),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'member'),
         ])
 
         const { count: totalProducts } = productsRes
         const { data: bookings, count: totalBookings } = bookingsRes
         const { count: totalTestimonials } = testimonialsRes
+        const { count: totalMembers } = membersRes
 
         // Get status counts from all bookings
         const { data: allStatuses } = await supabase
@@ -62,6 +66,7 @@ export default function AdminDashboard() {
           completedBookings: completedCount,
           cancelledBookings: cancelledCount,
           totalTestimonials: totalTestimonials ?? 0,
+          totalMembers: totalMembers ?? 0,
         })
         setRecentBookings(bookings ?? [])
       } catch (err) {
@@ -118,6 +123,13 @@ export default function AdminDashboard() {
       color: 'text-purple-400',
       bg: 'bg-purple-500/10',
     },
+    {
+      label: 'Total Member',
+      value: stats.totalMembers,
+      icon: Users,
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+    },
   ]
 
   return (
@@ -129,7 +141,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {statCards.map((card, i) => {
           const Icon = card.icon
           return (
