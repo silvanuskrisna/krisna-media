@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none">
+  <defs>
+    <linearGradient id="kmAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="320" height="320" rx="60" fill="url(#kmAccent)" />
+  <path d="M90 60 L90 260 M90 160 L180 60 M90 160 L180 260" 
+        stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <path d="M180 120 L205 60 L235 120" 
+        stroke="white" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <circle cx="230" cy="170" r="10" fill="white" opacity="0.9" />
+  <circle cx="242" cy="194" r="8" fill="white" opacity="0.65" />
+  <circle cx="252" cy="216" r="6" fill="white" opacity="0.4" />
+  <circle cx="258" cy="236" r="4" fill="white" opacity="0.2" />
+</svg>
