@@ -164,7 +164,7 @@ export default function AboutPage() {
                   Pendiri &amp; Pemilik Krisna Media
                 </p>
                 <p className="text-muted leading-relaxed text-base">
-                  Seorang pengusaha asal Banjarmasin yang memiliki visi untuk
+                  Seorang pengusaha dan musisi asal Banjarmasin yang memiliki visi untuk
                   menghadirkan solusi audio, lighting, dan perlengkapan musik
                   berkualitas di Kalimantan Selatan. Selain mengelola Krisna Media,
                   beliau juga mengembangkan beberapa usaha lain di Banjarmasin

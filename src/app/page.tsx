@@ -263,8 +263,8 @@ async function LandingPage() {
                 Penyedia layanan <span className="text-foreground font-medium">Sound System</span>,{' '}
                 <span className="text-foreground font-medium">Lighting</span>,{' '}
                 <span className="text-foreground font-medium">Studio Musik</span>, dan{' '}
-                <span className="text-foreground font-medium">Perlengkapan Gitar</span>
-                {' '}di Banjarmasin. Siap membantu acara Anda sukses.
+                <span className="text-foreground font-medium">Alat Musik</span>
+                {' '}di Banjarmasin. Siap memeriahkan acara Anda.
               </p>
 
               <div className="animate-fade-in delay-300 flex flex-col sm:flex-row gap-3">
