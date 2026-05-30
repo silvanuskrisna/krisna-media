@@ -1,5 +1,5 @@
 -- Fix: New signups get role 'member' instead of 'admin'
--- Jalankan SQL ini di Supabase SQL Editor (Dashboard → SQL Editor → New Query)
+-- Jalankan SQL ini di Supabase SQL Editor
 
 -- 1. Update CHECK constraint di tabel profiles agar menerima role 'member'
 ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
@@ -19,7 +19,3 @@ END;$$;
 UPDATE public.profiles
 SET role = 'superadmin'
 WHERE id = (SELECT id FROM auth.users WHERE email = 'silvanuskrisna@gmail.com' LIMIT 1);
-
--- 4. (Opsional) Update existing admin profiles
--- Jika ada admin lain, jalankan:
--- UPDATE profiles SET role = 'admin' WHERE role IS NULL;
