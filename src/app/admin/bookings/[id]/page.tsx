@@ -211,6 +211,30 @@ export default function AdminBookingDetail() {
             </div>
           </div>
         )}
+
+        {/* Payment Info */}
+        {booking.payment_method && (
+          <div className="mt-5 pt-5 border-t border-border/50">
+            <div className="flex items-start gap-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Metode Pembayaran</p>
+                <p className="text-sm text-foreground font-medium mt-0.5 capitalize">{booking.payment_method}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        {booking.payment_proof && (
+          <div className="mt-4">
+            <p className="text-xs text-muted-foreground mb-2">Bukti Transfer</p>
+            <a href={booking.payment_proof} target="_blank" rel="noopener noreferrer">
+              <img
+                src={booking.payment_proof}
+                alt="Bukti transfer"
+                className="w-48 h-48 object-cover rounded-lg border border-border hover:opacity-80 transition-opacity cursor-pointer"
+              />
+            </a>
+          </div>
+        )}
       </div>
 
       {/* Actions */}

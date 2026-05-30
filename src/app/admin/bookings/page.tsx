@@ -308,6 +308,33 @@ export default function AdminBookings() {
                           <p className="text-foreground mt-0.5">{booking.admin_notes}</p>
                         </div>
                       )}
+
+                      {/* Payment Info */}
+                      {booking.payment_method && (
+                        <div>
+                          <span className="text-muted-foreground text-xs">Pembayaran</span>
+                          <p className="text-foreground mt-0.5 capitalize">{booking.payment_method}</p>
+                        </div>
+                      )}
+                      {booking.payment_proof && (
+                        <div className="col-span-full">
+                          <span className="text-muted-foreground text-xs">Bukti Transfer</span>
+                          <div className="mt-1.5">
+                            <a
+                              href={booking.payment_proof}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block"
+                            >
+                              <img
+                                src={booking.payment_proof}
+                                alt="Bukti transfer"
+                                className="w-32 h-32 object-cover rounded-lg border border-border hover:opacity-80 transition-opacity cursor-pointer"
+                              />
+                            </a>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* WhatsApp button */}

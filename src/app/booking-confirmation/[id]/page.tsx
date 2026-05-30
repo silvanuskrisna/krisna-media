@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { CheckCircle, Calendar, Clock, User, Phone, Mail, MessageCircle, Home, Tag } from 'lucide-react'
 import { cn, formatDate, getWhatsAppUrl } from '@/lib/utils'
 import type { Booking } from '@/lib/types'
+import PaymentUpload from '@/components/PaymentUpload'
 
 async function getBookingById(id: string): Promise<Booking | null> {
   const sb = await createSupabaseServer()
@@ -216,6 +217,11 @@ export default async function BookingConfirmationPage({
                   : 'Dibatalkan'}
               </span>
             </div>
+          </div>
+
+          {/* Payment Section */}
+          <div className="mt-8 animate-fade-in-up delay-150">
+            <PaymentUpload bookingId={booking.id} />
           </div>
 
           {/* Actions */}

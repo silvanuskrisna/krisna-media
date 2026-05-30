@@ -15,6 +15,9 @@ interface SettingsData {
   facebook: string
   youtube: string
   tiktok: string
+  bank_name: string
+  bank_account: string
+  bank_holder: string
 }
 
 const defaultSettings: SettingsData = {
@@ -27,6 +30,9 @@ const defaultSettings: SettingsData = {
   facebook: '',
   youtube: '',
   tiktok: '',
+  bank_name: '',
+  bank_account: '',
+  bank_holder: '',
 }
 
 const fieldGroups = [
@@ -52,6 +58,14 @@ const fieldGroups = [
       { key: 'facebook', label: 'Facebook', type: 'text', placeholder: 'Krisna Media' },
       { key: 'youtube', label: 'Youtube', type: 'text', placeholder: 'Krisna Media' },
       { key: 'tiktok', label: 'TikTok', type: 'text', placeholder: '@krisnamedia' },
+    ],
+  },
+  {
+    title: 'Pembayaran Transfer Bank',
+    fields: [
+      { key: 'bank_name', label: 'Nama Bank', type: 'text', placeholder: 'BCA / Mandiri / BSI' },
+      { key: 'bank_account', label: 'No. Rekening', type: 'text', placeholder: '1234567890' },
+      { key: 'bank_holder', label: 'Atas Nama', type: 'text', placeholder: 'Krisna Media / a.n. Pemilik' },
     ],
   },
 ]
