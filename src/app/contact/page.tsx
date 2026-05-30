@@ -31,7 +31,7 @@ const contactMethods = [
     description: 'Kunjungi lokasi kami',
     action: {
       label: 'Jl. KS Tubun Rt 5 No 63, Banjarmasin',
-      href: 'https://maps.google.com/?q=Jl.+KS+Tubun+Rt+5+No+63+Banjarmasin+Kalimantan+Selatan',
+      href: 'https://www.google.com/maps?q=-3.329296,114.591425',
     },
   },
 ]
