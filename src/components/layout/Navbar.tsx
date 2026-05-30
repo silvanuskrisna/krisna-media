@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/services', label: { id: 'Layanan', en: 'Services' } },
   { href: '/about', label: { id: 'Tentang', en: 'About' } },
   { href: '/testimonials', label: { id: 'Testimoni', en: 'Testimonials' } },
+  { href: '/gallery', label: { id: 'Galeri', en: 'Gallery' } },
   { href: '/contact', label: { id: 'Kontak', en: 'Contact' } },
 ]
 

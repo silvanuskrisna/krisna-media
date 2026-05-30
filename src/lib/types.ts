@@ -61,5 +61,27 @@ export interface SiteSetting {
   updated_at: string
 }
 
+export interface GalleryItem {
+  id: string
+  title: string
+  description: string | null
+  image_url: string
+  category: 'studio' | 'sound' | 'lighting' | 'event' | 'other'
+  sort_order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type GalleryCategory = GalleryItem['category']
+
+export const galleryCategories: { value: GalleryCategory; label: string }[] = [
+  { value: 'studio', label: 'Studio Musik' },
+  { value: 'sound', label: 'Sound System' },
+  { value: 'lighting', label: 'Lighting' },
+  { value: 'event', label: 'Event' },
+  { value: 'other', label: 'Lainnya' },
+]
+
 export type ProductCategory = Product['category']
 export type BookingStatus = Booking['status']
