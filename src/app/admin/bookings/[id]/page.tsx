@@ -228,6 +228,19 @@ export default function AdminBookingDetail() {
             Hubungi via WhatsApp
           </a>
 
+          {/* Minta Testimoni */}
+          {booking.status === 'completed' && (
+            <a
+              href={getWhatsAppUrl(booking.customer_phone, `Halo Kak ${booking.customer_name}! Terima kasih sudah menggunakan layanan ${booking.product_name || 'Krisna Media'} 🎉 Kami mohon bantuannya untuk memberikan testimoni ya, tinggal klik link ini: https://krisnamedia.id/testimonials Terima kasih banyak! 🙏`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600/20 text-purple-400 rounded-lg text-sm font-medium hover:bg-purple-600/30 transition-colors"
+            >
+              <MessageCircle size={16} />
+              💬 Minta Testimoni
+            </a>
+          )}
+
           {/* Confirm */}
           {booking.status === 'pending' && (
             <button

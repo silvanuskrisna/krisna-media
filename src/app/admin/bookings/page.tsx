@@ -311,7 +311,7 @@ export default function AdminBookings() {
                     </div>
 
                     {/* WhatsApp button */}
-                    <div className="mt-4">
+                    <div className="mt-4 flex flex-wrap gap-2">
                       <a
                         href={getWhatsAppUrl(booking.customer_phone)}
                         target="_blank"
@@ -321,6 +321,18 @@ export default function AdminBookings() {
                         <ExternalLink size={14} />
                         Hubungi via WhatsApp
                       </a>
+
+                      {booking.status === 'completed' && (
+                        <a
+                          href={getWhatsAppUrl(booking.customer_phone, `Halo Kak ${booking.customer_name}! Terima kasih sudah menggunakan layanan ${booking.product_name || 'Krisna Media'} 🎉 Kami mohon bantuannya untuk memberikan testimoni ya, tinggal klik link ini: https://krisnamedia.id/testimonials Terima kasih banyak! 🙏`)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-3 py-2 bg-purple-600/20 text-purple-400 rounded-lg text-xs font-medium hover:bg-purple-600/30 transition-colors"
+                        >
+                          <ExternalLink size={14} />
+                          💬 Minta Testimoni
+                        </a>
+                      )}
                     </div>
                   </div>
                 )}
