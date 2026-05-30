@@ -178,6 +178,15 @@ function BookingForm() {
       }
     }
 
+    // ───── GENERATE BOOKING CODE ─────
+    // Format: KM-XXXXXX (6 karakter alfanumerik)
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // tanpa O,0,I,1
+    let code = 'KM-'
+    for (let i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)]
+    }
+    const bookingCode = code
+
     const { data, error: insertError } = await supabase
       .from('bookings')
       .insert({
@@ -186,6 +195,7 @@ function BookingForm() {
         customer_email: customerEmail.trim() || null,
         product_id: selectedProductId,
         product_name: productName,
+        booking_code: bookingCode,
         total_price: totalPrice,
         booking_date: bookingDate,
         start_time: startTime || null,

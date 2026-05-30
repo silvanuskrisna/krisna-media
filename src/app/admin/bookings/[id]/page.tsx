@@ -101,7 +101,9 @@ export default function AdminBookingDetail() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{booking.customer_name}</h1>
-            <p className="text-sm text-muted-foreground mt-1">Detail pesanan</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Kode: <span className="font-mono text-accent">{booking.booking_code || booking.id}</span>
+            </p>
           </div>
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
             {status.label}

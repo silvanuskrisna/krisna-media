@@ -30,7 +30,9 @@ export default async function BookingConfirmationPage({
     notFound()
   }
 
-  const whatsappMessage = `Halo Krisna Media! Saya ingin menanyakan status booking saya dengan ID: ${booking.id}. Terima kasih.`
+  const whatsappMessage = booking.booking_code
+    ? `Halo Krisna Media! Saya ingin menanyakan status booking saya dengan kode: ${booking.booking_code}. Terima kasih.`
+    : `Halo Krisna Media! Saya ingin menanyakan status booking saya dengan ID: ${booking.id}. Terima kasih.`
 
   return (
     <>
@@ -68,10 +70,10 @@ export default async function BookingConfirmationPage({
             {/* ID */}
             <div className="flex items-center justify-between mb-8 pb-6 border-b border-border">
               <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                ID Booking
+                Kode Booking
               </p>
               <span className="text-sm font-mono text-accent bg-accent/10 px-3 py-1 rounded-md">
-                {booking.id}
+                {booking.booking_code || booking.id}
               </span>
             </div>
 

@@ -239,6 +239,10 @@ export default function AdminBookings() {
                   <div className="px-4 pb-4 pt-0 border-t border-border/50">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 text-sm">
                       <div>
+                        <span className="text-muted-foreground text-xs">Kode Booking</span>
+                        <p className="text-foreground mt-0.5 font-mono">{booking.booking_code || booking.id}</p>
+                      </div>
+                      <div>
                         <span className="text-muted-foreground text-xs">Nama</span>
                         <p className="text-foreground mt-0.5">{booking.customer_name}</p>
                       </div>

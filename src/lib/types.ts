@@ -17,6 +17,7 @@ export interface Product {
 
 export interface Booking {
   id: string
+  booking_code: string
   customer_name: string
   customer_phone: string
   customer_email: string | null
