@@ -30,8 +30,8 @@ const contactMethods = [
     title: 'Alamat',
     description: 'Kunjungi lokasi kami',
     action: {
-      label: 'Banjarmasin, Kalimantan Selatan',
-      href: 'https://maps.google.com/?q=Banjarmasin+Kalimantan+Selatan+Indonesia',
+      label: 'Jl. KS Tubun Rt 5 No 63, Banjarmasin',
+      href: 'https://maps.google.com/?q=Jl.+KS+Tubun+Rt+5+No+63+Banjarmasin+Kalimantan+Selatan',
     },
   },
 ]

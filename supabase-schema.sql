@@ -75,7 +75,7 @@ INSERT INTO site_settings (key, value) VALUES
 ('tagline', '"Sound | Lighting | Studio | Gear"'),
 ('whatsapp', '"+628115191097"'),
 ('email', '"krisna.media.bdj@gmail.com"'),
-('address', '"Banjarmasin, Kalimantan Selatan"'),
+('address', '"Jl. KS Tubun Rt 5 No 63, Banjarmasin, Kalimantan Selatan"'),
 ('social_media', '{"instagram": "", "facebook": "", "youtube": ""}');
 
 -- Enable Row Level Security

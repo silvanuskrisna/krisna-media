@@ -21,7 +21,7 @@ export default function Footer() {
               Sound | Lighting | Studio | Gear
             </p>
             <p className="mt-2 text-sm text-[#737373]">
-              Banjarmasin, Kalimantan Selatan
+              Jl. KS Tubun Rt 5 No 63, Banjarmasin
             </p>
           </div>
 
@@ -63,7 +63,7 @@ export default function Footer() {
               </a>
               <div className="flex items-start gap-3 text-sm text-[#737373]">
                 <MapPin size={14} className="mt-0.5 shrink-0" />
-                <span>Banjarmasin, Kalimantan Selatan</span>
+                <span>Jl. KS Tubun Rt 5 No 63, Banjarmasin</span>
               </div>
             </div>
             {/* Social */}
@@ -84,7 +84,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Krisna Media. All rights reserved.
           </p>
           <p className="text-xs text-[#525252]">
-            Banjarmasin, Kalimantan Selatan
+            Jl. KS Tubun Rt 5 No 63, Banjarmasin
           </p>
         </div>
       </div>
