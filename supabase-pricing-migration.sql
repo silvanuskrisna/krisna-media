@@ -75,7 +75,7 @@ INSERT INTO storage.buckets (id, name, public)
 SELECT 'payment-proofs', 'payment-proofs', true
 WHERE NOT EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'payment-proofs');
 
--- Public upload policy for payment-proofs
+-- Public upload policy for payment-proofs (tanpa size check di DB, di-handle frontend)
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'objects' AND policyname = 'Public Upload payment-proofs') THEN
@@ -84,7 +84,6 @@ BEGIN
       WITH CHECK (
         bucket_id = 'payment-proofs'
         AND (storage.extension(name) = 'jpg' OR storage.extension(name) = 'jpeg' OR storage.extension(name) = 'png')
-        AND octet_length(content) < 5242880
       );
   END IF;
 END $$;
