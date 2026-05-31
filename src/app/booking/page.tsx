@@ -463,6 +463,50 @@ function BookingForm() {
                 </div>
               )}
 
+              {/* Promo — tampil di atas biar langsung kelihatan */}
+              {availablePromos.length > 0 && !isHappyHourActive && (
+                <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-4 animate-fade-in-up">
+                  <h2 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <Tag size={18} />
+                    Promo Tersedia 🎪
+                  </h2>
+                  <div className="space-y-3">
+                    {availablePromos.map(promo => (
+                      <label
+                        key={promo.id}
+                        className={`block p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
+                          selectedPromoId === promo.id
+                            ? 'border-purple-500/50 bg-purple-500/10'
+                            : 'border-border hover:border-muted-foreground/30 bg-[#171717]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name="promo"
+                            value={promo.id}
+                            checked={selectedPromoId === promo.id}
+                            onChange={() => {
+                              setSelectedPromoId(promo.id)
+                            }}
+                            className="accent-purple-500"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-foreground">{promo.name}</p>
+                            {promo.description && (
+                              <p className="text-xs text-muted-foreground mt-0.5">{promo.description}</p>
+                            )}
+                            <p className="text-xs text-purple-400 mt-1">
+                              {formatPrice(promo.price_per_2hour)} / 2 jam · Sisa {promo.quota - promo.used} slot
+                            </p>
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Form card — Data Pemesan */}
               <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6 animate-fade-in-up">
                 <h2 className="text-xl font-semibold text-foreground mb-2">
@@ -624,7 +668,7 @@ function BookingForm() {
                     className="block text-sm font-medium text-foreground mb-1.5"
                   >
                     <Calendar size={14} className="inline mr-1.5 -mt-0.5" />
-                    Tanggal Acara <span className="text-red-400">*</span>
+                    Tanggal <span className="text-red-400">*</span>
                   </label>
                   <input
                     id="bookingDate"
@@ -718,47 +762,7 @@ function BookingForm() {
                 </div>
               </div>
 
-              {/* Promo — only if not HH and promos available */}
-              {availablePromos.length > 0 && !isHappyHourActive && (
-                <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-4 animate-fade-in-up delay-150">
-                  <h2 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2">
-                    <Tag size={18} />
-                    Promo Tersedia 🎪
-                  </h2>
-                  <div className="space-y-3">
-                    {availablePromos.map(promo => (
-                      <label
-                        key={promo.id}
-                        className={`block p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
-                          selectedPromoId === promo.id
-                            ? 'border-purple-500/50 bg-purple-500/10'
-                            : 'border-border hover:border-muted-foreground/30 bg-[#171717]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="radio"
-                            name="promo"
-                            value={promo.id}
-                            checked={selectedPromoId === promo.id}
-                            onChange={() => setSelectedPromoId(promo.id)}
-                            className="accent-purple-500"
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground">{promo.name}</p>
-                            {promo.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5">{promo.description}</p>
-                            )}
-                            <p className="text-xs text-purple-400 mt-1">
-                              {formatPrice(promo.price_per_2hour)} / 2 jam · Sisa {promo.quota - promo.used} slot
-                            </p>
-                          </div>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Promo — dipindah ke atas (sebelum Data Pemesan) */}
 
               {/* Pembayaran */}
               <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6 animate-fade-in-up delay-200">
