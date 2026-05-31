@@ -30,10 +30,35 @@ export interface Booking {
   payment_method: string | null
   payment_proof: string | null
   total_price: number | null
+  promo_id: string | null
+  promo_name: string | null
   notes: string | null
   admin_notes: string | null
   created_at: string
   updated_at: string
+}
+
+export interface Promo {
+  id: string
+  name: string
+  description: string | null
+  price_per_2hour: number
+  quota: number
+  used: number
+  start_date: string | null
+  end_date: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface HappyHourSettings {
+  enabled: boolean
+  start_time: string
+  end_time: string
+  days: string[]
+  price_1hour: number
+  price_2hour: number
 }
 
 export interface Testimonial {

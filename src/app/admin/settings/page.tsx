@@ -18,6 +18,11 @@ interface SettingsData {
   bank_name: string
   bank_account: string
   bank_holder: string
+  happy_hour_enabled: string
+  happy_hour_start_time: string
+  happy_hour_end_time: string
+  happy_hour_price_1hour: string
+  happy_hour_price_2hour: string
 }
 
 const defaultSettings: SettingsData = {
@@ -33,6 +38,11 @@ const defaultSettings: SettingsData = {
   bank_name: '',
   bank_account: '',
   bank_holder: '',
+  happy_hour_enabled: 'false',
+  happy_hour_start_time: '14:00',
+  happy_hour_end_time: '18:00',
+  happy_hour_price_1hour: '60000',
+  happy_hour_price_2hour: '100000',
 }
 
 const fieldGroups = [
@@ -66,6 +76,17 @@ const fieldGroups = [
       { key: 'bank_name', label: 'Nama Bank', type: 'text', placeholder: 'BCA / Mandiri / BSI' },
       { key: 'bank_account', label: 'No. Rekening', type: 'text', placeholder: '1234567890' },
       { key: 'bank_holder', label: 'Atas Nama', type: 'text', placeholder: 'Krisna Media / a.n. Pemilik' },
+    ],
+  },
+  {
+    title: 'Happy Hour Studio',
+    description: 'Diskon harga studio di weekdays jam tertentu. Hanya berlaku untuk studio musik.',
+    fields: [
+      { key: 'happy_hour_enabled', label: 'Aktifkan Happy Hour', type: 'select', options: [{ value: 'true', label: 'Aktif' }, { value: 'false', label: 'Nonaktif' }] },
+      { key: 'happy_hour_start_time', label: 'Jam Mulai', type: 'text', placeholder: '14:00' },
+      { key: 'happy_hour_end_time', label: 'Jam Selesai', type: 'text', placeholder: '18:00' },
+      { key: 'happy_hour_price_1hour', label: 'Harga 1 Jam (Rp)', type: 'text', placeholder: '60000' },
+      { key: 'happy_hour_price_2hour', label: 'Harga 2 Jam (Rp)', type: 'text', placeholder: '100000' },
     ],
   },
 ]
@@ -196,7 +217,10 @@ export default function AdminSettings() {
       <div className="space-y-6">
         {fieldGroups.map((group) => (
           <div key={group.title} className="glass rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-5">{group.title}</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-1">{group.title}</h2>
+            {(group as any).description && (
+              <p className="text-sm text-muted-foreground mb-5">{(group as any).description}</p>
+            )}
             <div className="space-y-4">
               {group.fields.map((field) => (
                 <div key={field.key}>
@@ -211,6 +235,16 @@ export default function AdminSettings() {
                       className="w-full px-3 py-2.5 bg-[#171717] border border-[#262626] rounded-lg text-white text-sm focus:outline-none focus:border-muted-foreground transition-colors resize-none"
                       placeholder={field.placeholder}
                     />
+                  ) : (field as any).type === 'select' ? (
+                    <select
+                      value={settings[field.key as keyof SettingsData]}
+                      onChange={(e) => updateField(field.key as keyof SettingsData, e.target.value)}
+                      className="w-full px-3 py-2.5 bg-[#171717] border border-[#262626] rounded-lg text-white text-sm focus:outline-none focus:border-muted-foreground transition-colors appearance-none"
+                    >
+                      {(field as any).options?.map((opt: { value: string; label: string }) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
                   ) : (
                     <input
                       type={field.type}
