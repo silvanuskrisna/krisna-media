@@ -15,12 +15,16 @@ export default async function PromoBanner() {
 
   if (!promos || promos.length === 0) return null
 
-  // Filter promo yang masih dalam periode & punya kuota
+  // Filter promo yang masih dalam periode ATAU akan datang (max 7 hari ke depan)
   const today = new Date().toISOString().split('T')[0]
+  const nextWeek = new Date()
+  nextWeek.setDate(nextWeek.getDate() + 7)
+  const nextWeekStr = nextWeek.toISOString().split('T')[0]
+
   const activePromos = promos.filter((p: Promo) => {
     if (p.used >= p.quota) return false
-    if (p.start_date && today < p.start_date) return false
     if (p.end_date && today > p.end_date) return false
+    if (p.start_date && p.start_date > nextWeekStr) return false
     return true
   })
 
@@ -48,11 +52,26 @@ export default async function PromoBanner() {
                   {/* Content */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
-                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-medium">
-                        <Tag size={12} />
-                        PROMO
-                      </span>
-                      {promo.quota - promo.used <= 3 && (
+                      {(!promo.start_date || today >= promo.start_date) ? (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-medium">
+                          <Tag size={12} />
+                          PROMO
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-medium">
+                          📅 Mulai{' '}
+                          {new Date(promo.start_date).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'long',
+                          })}
+                        </span>
+                      )}
+                      {promo.start_date && today < promo.start_date && promo.quota - promo.used <= 5 && (
+                        <span className="text-xs text-amber-400 font-medium">
+                          🎯 Segera hadir!
+                        </span>
+                      )}
+                      {(!promo.start_date || today >= promo.start_date) && promo.quota - promo.used <= 3 && (
                         <span className="text-xs text-red-400 font-medium animate-pulse">
                           ⚡ Sisa {promo.quota - promo.used} slot!
                         </span>
@@ -67,13 +86,27 @@ export default async function PromoBanner() {
                       </p>
                     )}
                     <div className="flex items-center gap-4 mt-3 flex-wrap">
-                      <span className="text-2xl font-bold text-purple-400">
-                        {formatPrice(promo.price_per_2hour)}
-                        <span className="text-sm text-muted-foreground font-normal"> / 2 jam</span>
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        🎯 Tersedia {promo.quota - promo.used} dari {promo.quota} slot
-                      </span>
+                      {(!promo.start_date || today >= promo.start_date) ? (
+                        <>
+                          <span className="text-2xl font-bold text-purple-400">
+                            {formatPrice(promo.price_per_2hour)}
+                            <span className="text-sm text-muted-foreground font-normal"> / 2 jam</span>
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            🎯 Tersedia {promo.quota - promo.used} dari {promo.quota} slot
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-amber-300">
+                          🗓️ Mulai{' '}
+                          {new Date(promo.start_date).toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}{' '}
+                          — {promo.quota - promo.used} slot tersedia
+                        </span>
+                      )}
                       {promo.end_date && (
                         <span className="text-xs text-muted-foreground">
                           📅 Sampai {new Date(promo.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -84,10 +117,16 @@ export default async function PromoBanner() {
 
                   {/* Arrow */}
                   <div className="shrink-0">
-                    <span className="inline-flex items-center gap-2 px-5 py-3 bg-purple-500/20 text-purple-300 rounded-lg text-sm font-medium group-hover:bg-purple-500/30 transition-colors">
-                      Booking
-                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                    </span>
+                    {(!promo.start_date || today >= promo.start_date) ? (
+                      <span className="inline-flex items-center gap-2 px-5 py-3 bg-purple-500/20 text-purple-300 rounded-lg text-sm font-medium group-hover:bg-purple-500/30 transition-colors">
+                        Booking
+                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500/15 text-amber-300 rounded-lg text-sm font-medium">
+                        🗓️ Segera
+                      </span>
+                    )}
                   </div>
                 </div>
               </Link>
