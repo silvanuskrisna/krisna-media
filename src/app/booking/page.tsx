@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Calendar, Clock, ArrowLeft, Send, CheckCircle, User, Phone, Mail, MessageCircle, FileText, Tag, Banknote, Wallet, Upload } from 'lucide-react'
@@ -157,8 +157,26 @@ function BookingForm() {
     if (isHappyHourActive) setSelectedPromoId('')
   }, [isHappyHourActive])
 
-  // Reset promo when product changes
+  // Prevent loop when promo auto-sets product
+  const promoAutoRef = useRef(false)
+
+  // When promo is selected, auto-fill service to Paket 2 Jam
   useEffect(() => {
+    if (selectedPromoId && products.length > 0) {
+      const paket2 = products.find(p => p.slug === 'rental-studio-paket-2')
+      if (paket2 && paket2.id !== selectedProductId) {
+        promoAutoRef.current = true
+        setSelectedProductId(paket2.id)
+      }
+    }
+  }, [selectedPromoId, products])
+
+  // Reset promo & payment when product changes (skip if auto-set by promo)
+  useEffect(() => {
+    if (promoAutoRef.current) {
+      promoAutoRef.current = false
+      return
+    }
     setSelectedPromoId('')
     setPaymentMethod('')
   }, [selectedProductId])
@@ -527,8 +545,13 @@ function BookingForm() {
                     id="product"
                     value={selectedProductId}
                     onChange={(e) => setSelectedProductId(e.target.value)}
+                    disabled={!!selectedPromoId}
                     required
-                    className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 appearance-none"
+                    className={`w-full px-4 py-3 rounded-lg bg-[#171717] text-white placeholder:text-muted-foreground text-sm focus:outline-none transition-all duration-200 appearance-none ${
+                      selectedPromoId
+                        ? 'border border-purple-500/30 opacity-70 cursor-not-allowed'
+                        : 'border border-[#262626] focus:border-accent/50 focus:ring-1 focus:ring-accent/30'
+                    }`}
                   >
                     <option value="" disabled>
                       {loadingProducts ? 'Memuat layanan...' : 'Pilih Layanan...'}
@@ -539,6 +562,11 @@ function BookingForm() {
                       </option>
                     ))}
                   </select>
+                  {selectedPromoId && (
+                    <p className="text-xs text-purple-400 mt-1.5">
+                      ✅ Layanan otomatis: Rental Studio (Paket 2 Jam) — sesuai promo aktif 🎪
+                    </p>
+                  )}
                 </div>
 
                 {/* Harga — HH / Normal / Promo */}
