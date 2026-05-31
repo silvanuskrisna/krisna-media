@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Search, ArrowRight, Headphones, Lightbulb, Music, Package } from 'lucide-react'
 import { cn, formatPrice, categoryLabels } from '@/lib/utils'
 import type { Product } from '@/lib/types'
+import PromoBanner from '@/components/PromoBanner'
 
 const categories = [
   { value: '', label: 'Semua' },
@@ -140,6 +141,8 @@ export default async function ServicesPage({
       </section>
 
       <div className="section-divider mx-6 md:mx-12" />
+
+      <PromoBanner />
 
       {/* ===== PRODUCTS GRID ===== */}
       <section className="py-16 md:py-24">

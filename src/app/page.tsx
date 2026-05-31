@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { Star, ArrowRight, ChevronRight, Sparkles, ShieldCheck, Headphones, Lightbulb, Music, Calendar, Clock, Package } from 'lucide-react'
 import { cn, formatPrice, getWhatsAppUrl, formatDate, categoryLabels, statusColors } from '@/lib/utils'
 import type { Product, Testimonial, Booking } from '@/lib/types'
+import PromoBanner from '@/components/PromoBanner'
 
 interface SiteSettings {
   whatsapp: string
@@ -365,6 +366,8 @@ async function LandingPage() {
       </section>
 
       <div className="section-divider mx-6 md:mx-12" />
+
+      <PromoBanner />
 
       {/* ===== FEATURED SERVICES ===== */}
       <section className="py-20 md:py-28">
