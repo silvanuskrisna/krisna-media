@@ -1,6 +1,6 @@
 import { createSupabaseServer } from '@/lib/supabase-server'
 import Link from 'next/link'
-import { Search, ArrowRight, Headphones, Lightbulb, Music, Package } from 'lucide-react'
+import { Search, ArrowRight, Headphones, Lightbulb, Music, Package, Star } from 'lucide-react'
 import { cn, formatPrice, categoryLabels } from '@/lib/utils'
 import type { Product } from '@/lib/types'
 import PromoBanner from '@/components/PromoBanner'
@@ -18,6 +18,7 @@ const categoryColors: Record<string, string> = {
   lighting: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   studio: 'bg-green-500/10 text-green-400 border-green-500/20',
   'senar-gitar': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  'kursus-musik': 'bg-pink-500/10 text-pink-400 border-pink-500/20',
 }
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -25,6 +26,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   lighting: <Lightbulb size={16} />,
   studio: <Music size={16} />,
   'senar-gitar': <Package size={16} />,
+  'kursus-musik': <Star size={16} />,
 }
 
 async function getProducts(): Promise<Product[]> {
@@ -147,6 +149,61 @@ export default async function ServicesPage({
       {/* ===== PRODUCTS GRID ===== */}
       <section className="py-16 md:py-24">
         <div className="max-w-6xl mx-auto px-6">
+          {/* KMC Special Card */}
+          {!activeCategory && !searchQuery && (
+            <div className="mb-8 animate-fade-in-up">
+              <div className="glass rounded-xl p-6 border border-pink-500/30 bg-pink-500/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 blur-[60px] rounded-full pointer-events-none" />
+                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+                  <div className="w-16 h-16 rounded-2xl bg-pink-500/20 flex items-center justify-center text-3xl shrink-0">
+                    🎵
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-pink-400 bg-pink-500/10 px-3 py-1.5 rounded-full border border-pink-500/20">
+                        <Star size={12} />
+                        Kursus Musik
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">
+                      Krisna Music Course — Belajar Gitar, Piano & Drum
+                    </h3>
+                    <p className="text-muted text-sm leading-relaxed mb-4">
+                      Kursus musik profesional untuk semua usia. Dari pemula hingga mahir, 
+                      kami bimbing perjalanan musikal kamu dengan kurikulum terstruktur dan pengajar berpengalaman.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <span className="inline-flex items-center gap-1.5 text-xs text-foreground bg-card px-3 py-1.5 rounded-full border border-border">
+                        🎸 Gitar
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-foreground bg-card px-3 py-1.5 rounded-full border border-border">
+                        🎹 Piano
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-foreground bg-card px-3 py-1.5 rounded-full border border-border">
+                        🥁 Drum
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Link
+                      href="/kmc/register"
+                      className="inline-flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-300 shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 hover:-translate-y-0.5 text-sm"
+                    >
+                      <Star size={16} />
+                      Daftar Sekarang
+                    </Link>
+                    <Link
+                      href="/my-kmc-lessons"
+                      className="inline-flex items-center justify-center gap-2 bg-card hover:bg-card/80 text-foreground font-medium px-6 py-3 rounded-lg transition-all duration-300 border border-border text-sm"
+                    >
+                      Lihat Status
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product, i) => {
@@ -203,13 +260,24 @@ export default async function ServicesPage({
                     </div>
 
                     {/* CTA buttons */}
-                    <Link
-                      href={`/booking?product=${product.slug}`}
-                      className="inline-flex items-center justify-center gap-2 w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-all duration-300"
-                    >
-                      Booking Sekarang
-                      <ArrowRight size={16} />
-                    </Link>
+                    {product.category === 'kursus-musik' ? (
+                      <Link
+                        href="/kmc/register"
+                        className="inline-flex items-center justify-center gap-2 w-full bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-all duration-300"
+                      >
+                        <Star size={16} />
+                        Daftar Kursus
+                        <ArrowRight size={16} />
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/booking?product=${product.slug}`}
+                        className="inline-flex items-center justify-center gap-2 w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-all duration-300"
+                      >
+                        Booking Sekarang
+                        <ArrowRight size={16} />
+                      </Link>
+                    )}
                   </div>
                 )
               })}

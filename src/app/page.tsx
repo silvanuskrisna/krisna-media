@@ -542,6 +542,75 @@ async function LandingPage() {
         </div>
       </section>
 
+      {/* ===== KMC SECTION ===== */}
+      <div className="section-divider mx-6 md:mx-12" />
+
+      <section className="py-20 md:py-28 relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-background to-pink-500/10" />
+        <div className="absolute inset-0 bg-mesh-grid opacity-30 bg-noise" />
+
+        <div className="relative z-10 max-w-5xl mx-auto px-6">
+          {/* Section header */}
+          <div className="text-center mb-12 animate-fade-in">
+            <p className="inline-flex items-center gap-2 text-sm text-purple-400 font-medium tracking-wider uppercase mb-4 border border-purple-500/20 rounded-full px-4 py-1.5 glass">
+              <Music size={14} />
+              Krisna Music Course
+            </p>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+              Belajar Musik Bersama Kami
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+              Kursus musik profesional untuk Gitar, Piano, dan Drum. 
+              Dari pemula hingga mahir, kami siap membimbing perjalanan musikal Anda.
+            </p>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 animate-fade-in-up delay-100">
+            <div className="glass rounded-xl p-6 border border-purple-500/20 bg-purple-500/5">
+              <div className="text-4xl mb-4">🎸</div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Gitar</h3>
+              <p className="text-sm text-muted-foreground">
+                Akustik & Elektrik - Dari chord dasar hingga solo improvisasi
+              </p>
+            </div>
+            <div className="glass rounded-xl p-6 border border-pink-500/20 bg-pink-500/5">
+              <div className="text-4xl mb-4">🎹</div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Piano</h3>
+              <p className="text-sm text-muted-foreground">
+                Keyboard & Piano - Teknik bermain, teori musik, dan aransemen
+              </p>
+            </div>
+            <div className="glass rounded-xl p-6 border border-blue-500/20 bg-blue-500/5">
+              <div className="text-4xl mb-4">🥁</div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Drum</h3>
+              <p className="text-sm text-muted-foreground">
+                Drum Set & Perkusi - Ritme, timing, dan groove yang solid
+              </p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up delay-200">
+            <Link
+              href="/kmc/register"
+              className="inline-flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium px-8 py-4 rounded-lg transition-all duration-300 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:-translate-y-0.5 text-base"
+            >
+              <Music size={20} />
+              Daftar Sekarang
+            </Link>
+            <Link
+              href="/my-kmc-lessons"
+              className="inline-flex items-center justify-center gap-2 bg-card hover:bg-card/80 text-foreground font-medium px-8 py-4 rounded-lg transition-all duration-300 border border-border text-base"
+            >
+              <Calendar size={20} />
+              Cek Status Pendaftaran
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ===== CTA SECTION ===== */}
       <div className="section-divider mx-6 md:mx-12" />
 

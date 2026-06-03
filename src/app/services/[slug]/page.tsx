@@ -1,7 +1,7 @@
 import { createSupabaseServer } from '@/lib/supabase-server'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { ArrowLeft, ArrowRight, Headphones, Lightbulb, Music, Package, Calendar, MessageCircle, ImageIcon } from 'lucide-react'
+import { notFound, redirect } from 'next/navigation'
+import { ArrowLeft, ArrowRight, Headphones, Lightbulb, Music, Package, Calendar, MessageCircle, ImageIcon, Star } from 'lucide-react'
 import { cn, formatPrice, getWhatsAppUrl, categoryLabels } from '@/lib/utils'
 import type { Product } from '@/lib/types'
 
@@ -10,6 +10,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
   lighting: <Lightbulb size={20} />,
   studio: <Music size={20} />,
   'senar-gitar': <Package size={20} />,
+  'kursus-musik': <Star size={20} />,
 }
 
 const categoryColors: Record<string, string> = {
@@ -17,6 +18,7 @@ const categoryColors: Record<string, string> = {
   lighting: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
   studio: 'bg-green-500/10 text-green-400 border-green-500/20',
   'senar-gitar': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  'kursus-musik': 'bg-pink-500/10 text-pink-400 border-pink-500/20',
 }
 
 async function getProductBySlug(slug: string): Promise<Product | null> {
@@ -41,6 +43,11 @@ export default async function ServiceDetailPage({
 
   if (!product) {
     notFound()
+  }
+
+  // Redirect kursus-musik to KMC registration
+  if (product.category === 'kursus-musik') {
+    redirect('/kmc/register')
   }
 
   const whatsappMessage = `Halo Krisna Media! Saya tertarik dengan produk: ${product.name}. Bisakah saya mendapatkan informasi lebih lanjut?`

@@ -12,6 +12,8 @@ const navLinks = [
   { href: '/admin/products', label: 'Produk', icon: Package },
   { href: '/admin/promos', label: 'Promo', icon: Tag },
   { href: '/admin/bookings', label: 'Pesanan', icon: Calendar },
+  { href: '/admin/kmc-schedules', label: 'Jadwal KMC', icon: Music },
+  { href: '/admin/kmc-registrations', label: 'Pendaftaran KMC', icon: Music },
   { href: '/admin/testimonials', label: 'Testimoni', icon: MessageSquare },
   { href: '/admin/gallery', label: 'Galeri', icon: ImageIcon },
   { href: '/admin/settings', label: 'Pengaturan', icon: Settings },

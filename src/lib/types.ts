@@ -2,7 +2,7 @@ export interface Product {
   id: string
   name: string
   slug: string
-  category: 'sound' | 'lighting' | 'studio' | 'senar-gitar'
+  category: 'sound' | 'lighting' | 'studio' | 'senar-gitar' | 'kursus-musik'
   description: string | null
   price: number
   price_unit: string

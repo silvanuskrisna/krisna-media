@@ -56,6 +56,8 @@ export default function AdminBookingDetail() {
 
       if (error) throw error
       await fetchBooking()
+      // Auto-close: redirect back to bookings list
+      router.push('/admin/bookings')
     } catch (err) {
       console.error('Failed to update booking:', err)
       alert('Gagal mengupdate status pesanan')

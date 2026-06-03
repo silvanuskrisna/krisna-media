@@ -43,6 +43,7 @@ export const categoryLabels: Record<string, { id: string; en: string }> = {
   lighting: { id: 'Lighting', en: 'Lighting' },
   studio: { id: 'Studio Musik', en: 'Music Studio' },
   'senar-gitar': { id: 'Senar Gitar', en: 'Guitar Strings' },
+  'kursus-musik': { id: 'Kursus Musik', en: 'Music Course' },
 }
 
 export const statusColors: Record<string, string> = {

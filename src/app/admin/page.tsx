@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Package, Calendar, MessageSquare, Users, TrendingUp, TriangleAlert, ExternalLink } from 'lucide-react'
+import Link from 'next/link'
+import { Package, Calendar, MessageSquare, Users, TrendingUp, TriangleAlert, ExternalLink, Music } from 'lucide-react'
 import { formatDate, formatPrice, statusColors } from '@/lib/utils'
 import type { Booking } from '@/lib/types'
 
@@ -16,6 +17,7 @@ interface Stats {
   cancelledBookings: number
   totalTestimonials: number
   totalMembers: number
+  kmcRegistrations: number
 }
 
 export default function AdminDashboard() {
@@ -28,6 +30,7 @@ export default function AdminDashboard() {
     cancelledBookings: 0,
     totalTestimonials: 0,
     totalMembers: 0,
+    kmcRegistrations: 0,
   })
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,17 +39,19 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [productsRes, bookingsRes, testimonialsRes, membersRes] = await Promise.all([
+        const [productsRes, bookingsRes, testimonialsRes, membersRes, kmcRes] = await Promise.all([
           supabase.from('products').select('id', { count: 'exact', head: true }),
           supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(5),
           supabase.from('testimonials').select('id', { count: 'exact', head: true }),
           supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'member'),
+          supabase.from('kmc_registrations').select('id', { count: 'exact', head: true }),
         ])
 
         const { count: totalProducts } = productsRes
         const { data: bookings, count: totalBookings } = bookingsRes
         const { count: totalTestimonials } = testimonialsRes
         const { count: totalMembers } = membersRes
+        const { count: kmcRegistrations } = kmcRes
 
         // Get status counts from all bookings
         const { data: allStatuses } = await supabase
@@ -67,6 +72,7 @@ export default function AdminDashboard() {
           cancelledBookings: cancelledCount,
           totalTestimonials: totalTestimonials ?? 0,
           totalMembers: totalMembers ?? 0,
+          kmcRegistrations: kmcRegistrations ?? 0,
         })
         setRecentBookings(bookings ?? [])
       } catch (err) {
@@ -101,6 +107,14 @@ export default function AdminDashboard() {
       icon: Calendar,
       color: 'text-green-400',
       bg: 'bg-green-500/10',
+    },
+    {
+      label: 'KMC Registrations',
+      value: stats.kmcRegistrations,
+      icon: Music,
+      color: 'text-pink-400',
+      bg: 'bg-pink-500/10',
+      href: '/admin/kmc-registrations',
     },
     {
       label: 'Pesanan Pending',
@@ -144,11 +158,8 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {statCards.map((card, i) => {
           const Icon = card.icon
-          return (
-            <div
-              key={card.label}
-              className={`glass rounded-xl p-5 hover-card animate-fade-in delay-${(i + 1) * 100}`}
-            >
+          const CardContent = (
+            <>
               <div className="flex items-center justify-between mb-3">
                 <div className={`p-2.5 rounded-lg ${card.bg}`}>
                   <Icon size={20} className={card.color} />
@@ -156,6 +167,21 @@ export default function AdminDashboard() {
               </div>
               <div className="text-2xl font-bold text-foreground">{card.value}</div>
               <div className="text-sm text-muted-foreground mt-1">{card.label}</div>
+            </>
+          )
+          
+          return (
+            <div
+              key={card.label}
+              className={`glass rounded-xl p-5 hover-card animate-fade-in delay-${(i + 1) * 100} ${card.href ? 'cursor-pointer hover:shadow-lg hover:shadow-accent/10 transition-shadow' : ''}`}
+            >
+              {card.href ? (
+                <Link href={card.href}>
+                  {CardContent}
+                </Link>
+              ) : (
+                CardContent
+              )}
             </div>
           )
         })}
