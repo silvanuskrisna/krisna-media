@@ -26,6 +26,7 @@ interface ScheduleSlot {
   day: string
   start_time: string
   end_time: string
+  is_available: boolean
   instrument?: string
 }
 
@@ -114,20 +115,19 @@ export default function KMCRegistration() {
   // Get ordered day keys
   const orderedDays = DAY_ORDER.filter(day => schedulesByDay[day])
 
-  // Fetch available schedules (no instrument filter - Ivan teaches all instruments)
+  // Fetch all schedules (available + occupied)
   useEffect(() => {
     async function fetchSchedules() {
       const { data, error } = await supabase
         .from('kmc_schedules')
-        .select('id, day, start_time, end_time')
-        .eq('is_available', true)
+        .select('id, day, start_time, end_time, is_available')
         .order('day')
         .order('start_time')
 
       if (error) {
         console.error('Error fetching schedules:', error)
       } else {
-        setAvailableSchedules(data || [])
+        setAvailableSchedules((data || []) as ScheduleSlot[])
       }
     }
 
@@ -378,7 +378,7 @@ export default function KMCRegistration() {
               <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6">
                 <div className="flex items-center gap-3">
                   <Calendar size={20} className="text-accent" />
-                  <h3 className="text-xl font-semibold text-foreground">Pilih Jadwal Tersedia</h3>
+                  <h3 className="text-xl font-semibold text-foreground">Pilih Jadwal</h3>
                 </div>
 
                 {availableSchedules.length === 0 ? (
@@ -405,10 +405,12 @@ export default function KMCRegistration() {
                           {schedulesByDay[day].map((schedule) => (
                             <label
                               key={schedule.id}
-                              className={`relative block p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
-                                preferredScheduleId === schedule.id
-                                  ? 'border-accent bg-accent/10 shadow-lg shadow-accent/20'
-                                  : 'border-border hover:border-muted-foreground/30 bg-card'
+                              className={`relative block p-4 rounded-xl border transition-all duration-200 ${
+                                !schedule.is_available
+                                  ? 'border-red-500/20 bg-red-500/5 opacity-60 cursor-not-allowed'
+                                  : preferredScheduleId === schedule.id
+                                    ? 'border-accent bg-accent/10 shadow-lg shadow-accent/20 cursor-pointer'
+                                    : 'border-border hover:border-muted-foreground/30 bg-card cursor-pointer'
                               }`}
                             >
                               <input
@@ -417,6 +419,7 @@ export default function KMCRegistration() {
                                 value={schedule.id}
                                 checked={preferredScheduleId === schedule.id}
                                 onChange={(e) => setPreferredScheduleId(e.target.value)}
+                                disabled={!schedule.is_available}
                                 className="sr-only"
                                 required
                               />
@@ -424,11 +427,16 @@ export default function KMCRegistration() {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2">
                                     <Clock size={14} className="text-muted-foreground" />
-                                    <span className="text-sm font-medium text-foreground">
+                                    <span className={`text-sm font-medium ${schedule.is_available ? 'text-foreground' : 'text-muted-foreground'}`}>
                                       {schedule.start_time.slice(0, 5)} - {schedule.end_time.slice(0, 5)}
                                     </span>
                                   </div>
                                 </div>
+                                {!schedule.is_available && (
+                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20">
+                                    Sudah Diisi
+                                  </span>
+                                )}
                               </div>
                             </label>
                           ))}
