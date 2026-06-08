@@ -53,6 +53,7 @@ export default function AdminKMCMembers() {
   const [newInstrument, setNewInstrument] = useState('Gitar')
   const [newDay, setNewDay] = useState('Senin')
   const [newStartTime, setNewStartTime] = useState('14:00')
+  const [newStartDate, setNewStartDate] = useState('')
   const [addingEnrollment, setAddingEnrollment] = useState(false)
 
   useEffect(() => {
@@ -181,6 +182,7 @@ export default function AdminKMCMembers() {
           instrument: newInstrument,
           status: 'pending',
           sessions_per_month: 4,
+          start_date: newStartDate || null,
         })
         .select()
         .single()
@@ -204,6 +206,7 @@ export default function AdminKMCMembers() {
       setNewInstrument('Gitar')
       setNewDay('Senin')
       setNewStartTime('14:00')
+      setNewStartDate('')
     } catch (err: any) {
       alert('Gagal menambahkan pendaftaran: ' + err.message)
     } finally {
@@ -519,6 +522,12 @@ export default function AdminKMCMembers() {
                                 </div>
                               )}
 
+                              {enrollment.start_date && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  Mulai: {new Date(enrollment.start_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </div>
+                              )}
+
                               {enrollment.tuition_fee && (
                                 <div className="text-xs text-foreground mt-1">
                                   Rp {enrollment.tuition_fee.toLocaleString('id-ID')}/bln
@@ -728,6 +737,15 @@ export default function AdminKMCMembers() {
                 >
                   {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Mulai</label>
+                <input
+                  type="date"
+                  value={newStartDate}
+                  onChange={(e) => setNewStartDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
+                />
               </div>
               <div className="flex gap-2">
                 <button
