@@ -41,7 +41,6 @@ export default function AdminKMCMembers() {
   // Add member modal
   const [showAddMember, setShowAddMember] = useState(false)
   const [newMemberName, setNewMemberName] = useState('')
-  const [newMemberPhone, setNewMemberPhone] = useState('')
   const [newMemberWhatsapp, setNewMemberWhatsapp] = useState('')
   const [newMemberAddress, setNewMemberAddress] = useState('')
   const [newMemberReferral, setNewMemberReferral] = useState('')
@@ -119,7 +118,6 @@ export default function AdminKMCMembers() {
         .from('members')
         .insert({
           full_name: newMemberName.trim(),
-          phone: newMemberPhone.trim() || null,
           whatsapp: newMemberWhatsapp.trim() || null,
           address: newMemberAddress.trim() || null,
           referral_source: newMemberReferral.trim() || null,
@@ -131,7 +129,6 @@ export default function AdminKMCMembers() {
       await fetchMembers()
       setShowAddMember(false)
       setNewMemberName('')
-      setNewMemberPhone('')
       setNewMemberWhatsapp('')
       setNewMemberAddress('')
       setNewMemberReferral('')
@@ -574,27 +571,15 @@ export default function AdminKMCMembers() {
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-1">No. Telepon</label>
-                  <input
-                    type="text"
-                    value={newMemberPhone}
-                    onChange={(e) => setNewMemberPhone(e.target.value)}
-                    className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
-                    placeholder="Contoh: 0812..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-1">WhatsApp</label>
-                  <input
-                    type="text"
-                    value={newMemberWhatsapp}
-                    onChange={(e) => setNewMemberWhatsapp(e.target.value)}
-                    className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
-                    placeholder="Contoh: 0812..."
-                  />
-                </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">WhatsApp</label>
+                <input
+                  type="text"
+                  value={newMemberWhatsapp}
+                  onChange={(e) => setNewMemberWhatsapp(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
+                  placeholder="Contoh: 0812..."
+                />
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">Alamat</label>
