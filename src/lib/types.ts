@@ -109,5 +109,93 @@ export const galleryCategories: { value: GalleryCategory; label: string }[] = [
   { value: 'other', label: 'Lainnya' },
 ]
 
+// --- KMC New Schema ---
+
+export interface Member {
+  id: string
+  full_name: string
+  phone: string | null
+  whatsapp: string | null
+  address: string | null
+  referral_source: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Student {
+  id: string
+  member_id: string
+  name: string
+  age: number | null
+  whatsapp: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface Enrollment {
+  id: string
+  student_id: string
+  instrument: 'Gitar' | 'Piano' | 'Drum'
+  age_group: 'kids' | 'teen' | 'adult' | null
+  experience_level: 'beginner' | 'intermediate' | 'advanced' | null
+  status: 'pending' | 'active' | 'cuti' | 'inactive'
+  tuition_fee: number | null
+  sessions_per_month: number
+  start_date: string | null
+  admin_notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface LessonSchedule {
+  id: string
+  enrollment_id: string
+  day: string
+  start_time: string
+  end_time: string
+  created_at: string
+}
+
+export interface Invoice {
+  id: string
+  member_id: string
+  period: string
+  total: number
+  status: 'pending' | 'paid' | 'cancelled'
+  due_date: string | null
+  paid_at: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface InvoiceItem {
+  id: string
+  invoice_id: string
+  enrollment_id: string
+  student_name: string
+  instrument: string
+  amount: number
+  created_at: string
+}
+
+// Enrollment with student info (for display)
+export interface EnrollmentWithStudent extends Enrollment {
+  student: Pick<Student, 'id' | 'name' | 'age'>
+  lesson_schedules?: LessonSchedule[]
+}
+
+// Member with children and enrollments (for admin)
+export interface MemberWithDetails extends Member {
+  students: (Student & {
+    enrollments: (Enrollment & {
+      lesson_schedules: LessonSchedule[]
+    })[]
+  })[]
+}
+
 export type ProductCategory = Product['category']
 export type BookingStatus = Booking['status']
+export type EnrollmentStatus = Enrollment['status']
+export type InvoiceStatus = Invoice['status']

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Package, Calendar, MessageSquare, Users, TrendingUp, TriangleAlert, ExternalLink, Music } from 'lucide-react'
+import { Package, Calendar, MessageSquare, Users, TrendingUp, TriangleAlert, ExternalLink } from 'lucide-react'
 import { formatDate, formatPrice, statusColors } from '@/lib/utils'
 import type { Booking } from '@/lib/types'
 
@@ -17,7 +17,6 @@ interface Stats {
   cancelledBookings: number
   totalTestimonials: number
   totalMembers: number
-  kmcRegistrations: number
 }
 
 export default function AdminDashboard() {
@@ -30,7 +29,6 @@ export default function AdminDashboard() {
     cancelledBookings: 0,
     totalTestimonials: 0,
     totalMembers: 0,
-    kmcRegistrations: 0,
   })
   const [recentBookings, setRecentBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -39,19 +37,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [productsRes, bookingsRes, testimonialsRes, membersRes, kmcRes] = await Promise.all([
+        const [productsRes, bookingsRes, testimonialsRes, membersRes] = await Promise.all([
           supabase.from('products').select('id', { count: 'exact', head: true }),
           supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(5),
           supabase.from('testimonials').select('id', { count: 'exact', head: true }),
           supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'member'),
-          supabase.from('kmc_registrations').select('id', { count: 'exact', head: true }),
         ])
 
         const { count: totalProducts } = productsRes
         const { data: bookings, count: totalBookings } = bookingsRes
         const { count: totalTestimonials } = testimonialsRes
         const { count: totalMembers } = membersRes
-        const { count: kmcRegistrations } = kmcRes
 
         // Get status counts from all bookings
         const { data: allStatuses } = await supabase
@@ -72,7 +68,6 @@ export default function AdminDashboard() {
           cancelledBookings: cancelledCount,
           totalTestimonials: totalTestimonials ?? 0,
           totalMembers: totalMembers ?? 0,
-          kmcRegistrations: kmcRegistrations ?? 0,
         })
         setRecentBookings(bookings ?? [])
       } catch (err) {
@@ -93,7 +88,14 @@ export default function AdminDashboard() {
     )
   }
 
-  const statCards = [
+  const statCards: Array<{
+    label: string
+    value: number
+    icon: any
+    color: string
+    bg: string
+    href?: string
+  }> = [
     {
       label: 'Total Produk',
       value: stats.totalProducts,
@@ -107,14 +109,6 @@ export default function AdminDashboard() {
       icon: Calendar,
       color: 'text-green-400',
       bg: 'bg-green-500/10',
-    },
-    {
-      label: 'KMC Registrations',
-      value: stats.kmcRegistrations,
-      icon: Music,
-      color: 'text-pink-400',
-      bg: 'bg-pink-500/10',
-      href: '/admin/kmc-registrations',
     },
     {
       label: 'Pesanan Pending',

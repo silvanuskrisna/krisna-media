@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, Calendar, MessageSquare, Users, Settings, LogOut, Menu, X, Music, ImageIcon, Tag } from 'lucide-react'
+import { LayoutDashboard, Package, Calendar, MessageSquare, Users, Settings, LogOut, Menu, X, Music, ImageIcon, Tag, GraduationCap, FileText, DollarSign } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const navLinks = [
@@ -12,8 +12,11 @@ const navLinks = [
   { href: '/admin/products', label: 'Produk', icon: Package },
   { href: '/admin/promos', label: 'Promo', icon: Tag },
   { href: '/admin/bookings', label: 'Pesanan', icon: Calendar },
-  { href: '/admin/kmc-schedules', label: 'Jadwal KMC', icon: Music },
-  { href: '/admin/kmc-registrations', label: 'Pendaftaran KMC', icon: Music },
+  // KMC Section
+  { href: '/admin/kmc-members', label: 'KMC Member', icon: GraduationCap },
+  { href: '/admin/kmc-enrollments', label: 'KMC Enroll', icon: FileText },
+  { href: '/admin/kmc-schedules', label: 'KMC Jadwal', icon: Music },
+  { href: '/admin/kmc-invoices', label: 'KMC Tagihan', icon: DollarSign },
   { href: '/admin/testimonials', label: 'Testimoni', icon: MessageSquare },
   { href: '/admin/gallery', label: 'Galeri', icon: ImageIcon },
   { href: '/admin/settings', label: 'Pengaturan', icon: Settings },

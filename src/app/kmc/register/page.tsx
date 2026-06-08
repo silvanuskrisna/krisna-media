@@ -1,46 +1,34 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Send, CheckCircle, Music, Calendar, Clock, User, FileText, Star } from 'lucide-react'
+import { ArrowLeft, Send, CheckCircle, Music, Plus, Trash2, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/lib/types'
 
 const INSTRUMENTS = [
-  { value: 'Gitar', label: 'Gitar', icon: '🎸', description: 'Akustik & Elektrik' },
-  { value: 'Piano', label: 'Piano', icon: '🎹', description: 'Keyboard & Piano' },
-  { value: 'Drum', label: 'Drum', icon: '🥁', description: 'Drum Set & Perkusi' },
+  { value: 'Gitar', label: 'Gitar', icon: '🎸' },
+  { value: 'Piano', label: 'Piano', icon: '🎹' },
+  { value: 'Drum', label: 'Drum', icon: '🥁' },
 ]
 
-const DAYS = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+const DAYS = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
+const TIME_OPTIONS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00']
 
-const TIME_SLOTS = [
-  { value: 'morning', label: 'Pagi (09:00 - 12:00)' },
-  { value: 'afternoon', label: 'Siang (13:00 - 17:00)' },
-  { value: 'evening', label: 'Malam (18:00 - 21:00)' },
-]
-
-interface ScheduleSlot {
+interface FormRow {
   id: string
+  name: string
+  age: string
+  instrument: string
   day: string
-  start_time: string
-  end_time: string
-  is_available: boolean
-  instrument?: string
+  time: string
 }
 
-const AGE_GROUPS = [
-  { value: 'kids', label: 'Anak-anak (5-12 tahun)' },
-  { value: 'teen', label: 'Remaja (13-17 tahun)' },
-  { value: 'adult', label: 'Dewasa (18+ tahun)' },
-]
-
-const LEVELS = [
-  { value: 'beginner', label: 'Pemula (Belum bisa sama sekali)' },
-  { value: 'intermediate', label: 'Menengah (Sudah bisa dasar)' },
-  { value: 'advanced', label: 'Lanjut (Sudah bisa main lagu)' },
-]
+let rowCounter = 0
+function newRow(): FormRow {
+  return { id: `r${++rowCounter}`, name: '', age: '', instrument: '', day: 'Senin', time: '14:00' }
+}
 
 export default function KMCRegistration() {
   const router = useRouter()
@@ -50,184 +38,223 @@ export default function KMCRegistration() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [hasExistingRegistration, setHasExistingRegistration] = useState(false)
 
-  // Form state
-  const [studentName, setStudentName] = useState('')
-  const [instrument, setInstrument] = useState('')
-  const [preferredDay, setPreferredDay] = useState('')
-  const [preferredTime, setPreferredTime] = useState('')
-  const [preferredScheduleId, setPreferredScheduleId] = useState('')
-  const [availableSchedules, setAvailableSchedules] = useState<ScheduleSlot[]>([])
-  const [ageGroup, setAgeGroup] = useState('')
-  const [experienceLevel, setExperienceLevel] = useState('')
-  const [notes, setNotes] = useState('')
+  // Profile
+  const [fullName, setFullName] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [address, setAddress] = useState('')
 
-  // Check auth and existing registration
+  // Available slots: map of day → Set<time>
+  const [availableTimes, setAvailableTimes] = useState<Record<string, Set<string>>>({})
+
+  // Student rows
+  const [rows, setRows] = useState<FormRow[]>([newRow()])
+
   useEffect(() => {
-    async function checkAuth() {
+    async function init() {
       const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session) {
-        router.push('/auth?redirect=/kmc/register')
-        return
-      }
-
+      if (!session) { router.push('/auth?redirect=/kmc/register'); return }
       setUser(session.user)
 
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single()
-      
-      if (profileData) setProfile(profileData)
+      const { data: p } = await supabase.from('profiles').select('*').eq('id', session.user.id).single()
+      if (p) {
+        setProfile(p)
+        setFullName(p.full_name || '')
+      }
 
-      // Check existing registration
-      const { data: existing } = await supabase
-        .from('kmc_registrations')
-        .select('id, status')
-        .eq('user_id', session.user.id)
-        .single()
-
-      if (existing) {
-        setHasExistingRegistration(true)
+      const { data: m } = await supabase.from('members').select('*').eq('id', session.user.id).single()
+      if (m) {
+        setWhatsapp(m.whatsapp || '')
+        setAddress(m.address || '')
       }
 
       setLoading(false)
     }
-
-    checkAuth()
+    init()
   }, [router])
 
-  // Group schedules by day for organized display (ordered by day of week)
-  const DAY_ORDER = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
-  const schedulesByDay = availableSchedules.reduce((acc, schedule) => {
-    const day = schedule.day
-    if (!acc[day]) {
-      acc[day] = []
-    }
-    acc[day].push(schedule)
-    return acc
-  }, {} as Record<string, ScheduleSlot[]>)
-  
-  // Get ordered day keys
-  const orderedDays = DAY_ORDER.filter(day => schedulesByDay[day])
-
-  // Fetch all schedules (available + occupied)
   useEffect(() => {
-    async function fetchSchedules() {
-      const { data, error } = await supabase
+    if (!user) return
+    async function fetchSlots() {
+      const { data } = await supabase
         .from('kmc_schedules')
-        .select('id, day, start_time, end_time, is_available')
-        .order('day')
-        .order('start_time')
+        .select('day, start_time')
+        .eq('is_available', true)
 
-      if (error) {
-        console.error('Error fetching schedules:', error)
-      } else {
-        setAvailableSchedules((data || []) as ScheduleSlot[])
+      const map: Record<string, Set<string>> = {}
+      for (const d of DAYS) map[d] = new Set()
+      if (data) {
+        for (const s of data) {
+          const time = s.start_time.slice(0, 5)
+          if (map[s.day]) map[s.day].add(time)
+        }
       }
+      setAvailableTimes(map)
     }
+    fetchSlots()
+  }, [user])
 
-    fetchSchedules()
-  }, [])
+  function addRow() { setRows([...rows, newRow()]) }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  function removeRow(id: string) {
+    if (rows.length <= 1) return
+    setRows(rows.filter(r => r.id !== id))
+  }
+
+  function updateRow(id: string, field: keyof FormRow, value: string) {
+    setRows(rows.map(r => r.id === id ? { ...r, [field]: value } : r))
+  }
+
+  function getAvailableTimeOptions(day: string): string[] {
+    return (availableTimes[day] ? [...availableTimes[day]] : TIME_OPTIONS).sort()
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
 
-    // Validation
-    if (!studentName.trim() || !instrument || !preferredScheduleId) {
-      setError('Harap pilih instrument dan jadwal yang tersedia.')
-      return
-    }
+    const validRows = rows.filter(r => r.name.trim() && r.instrument)
+    if (validRows.length === 0) { setError('Isi minimal 1 siswa.'); return }
 
     setSubmitting(true)
+    try {
+      // 1. Upsert member profile
+      const { error: mErr } = await supabase
+        .from('members')
+        .upsert({
+          id: user.id,
+          full_name: fullName.trim() || profile?.full_name || 'Member',
+          whatsapp: whatsapp.trim() || null,
+          address: address.trim() || null,
+        }, { onConflict: 'id' })
+      if (mErr) throw mErr
 
-    // Get schedule details
-    const selectedSchedule = availableSchedules.find(s => s.id === preferredScheduleId)
-    if (!selectedSchedule) {
-      setError('Jadwal tidak valid.')
+      // 2. Get existing students for this member (name → id)
+      const { data: existing } = await supabase
+        .from('students')
+        .select('id, name')
+        .eq('member_id', user.id)
+
+      const existingByName = new Map<string, string>()
+      if (existing) {
+        for (const s of existing) existingByName.set(s.name.trim().toLowerCase(), s.id)
+      }
+
+      // 3. Collect new students to insert
+      const newStudentRows: FormRow[] = []
+      for (const r of validRows) {
+        const key = r.name.trim().toLowerCase()
+        if (!existingByName.has(key)) newStudentRows.push(r)
+      }
+
+      // 4. Insert new students (batch)
+      if (newStudentRows.length > 0) {
+        const { error: nsErr } = await supabase
+          .from('students')
+          .insert(newStudentRows.map(r => ({
+            member_id: user.id,
+            name: r.name.trim(),
+            age: r.age ? parseInt(r.age) : null,
+          })))
+        if (nsErr) throw nsErr
+      }
+
+      // 5. Re-fetch all students to have fresh IDs
+      const { data: allStudents } = await supabase
+        .from('students')
+        .select('id, name')
+        .eq('member_id', user.id)
+
+      const studentIdMap = new Map<string, string>()
+      if (allStudents) {
+        for (const s of allStudents) studentIdMap.set(s.name.trim().toLowerCase(), s.id)
+      }
+
+      // 6. Create enrollments + lesson_schedules
+      for (const r of validRows) {
+        const studentId = studentIdMap.get(r.name.trim().toLowerCase())
+        if (!studentId) continue
+
+        const endHour = parseInt(r.time.split(':')[0]) + 1
+        const endTime = `${String(endHour).padStart(2, '0')}:00`
+        const ageNum = r.age ? parseInt(r.age) : null
+        const ageGroup = ageNum
+          ? (ageNum <= 12 ? 'kids' : ageNum <= 17 ? 'teen' : 'adult')
+          : null
+
+        const { data: enrollment, error: enrErr } = await supabase
+          .from('enrollments')
+          .insert({
+            student_id: studentId,
+            instrument: r.instrument,
+            age_group: ageGroup,
+            experience_level: null,
+            status: 'pending',
+            sessions_per_month: 4,
+          })
+          .select()
+          .single()
+        if (enrErr) throw enrErr
+
+        const { error: schErr } = await supabase
+          .from('lesson_schedules')
+          .insert({
+            enrollment_id: enrollment.id,
+            day: r.day,
+            start_time: r.time + ':00',
+            end_time: endTime + ':00',
+          })
+        if (schErr) throw schErr
+      }
+
+      setSuccess(true)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
       setSubmitting(false)
-      return
     }
-
-    const registrationData = {
-      user_id: user.id,
-      student_name: studentName.trim(),
-      instrument,
-      preferred_day: selectedSchedule.day,
-      preferred_time: `${selectedSchedule.start_time.slice(0, 5)} - ${selectedSchedule.end_time.slice(0, 5)}`,
-      age_group: ageGroup || null,
-      experience_level: experienceLevel || null,
-      notes: notes.trim() || null,
-      status: 'pending',
-    }
-
-    const { data, error: insertError } = await supabase
-      .from('kmc_registrations')
-      .insert(registrationData)
-      .select('id')
-      .single()
-
-    if (insertError) {
-      console.error('Insert error:', insertError)
-      setError(`Gagal mengirim pendaftaran: ${insertError.message}`)
-      setSubmitting(false)
-      return
-    }
-
-    // Mark schedule slot as unavailable
-    const { error: scheduleError } = await supabase
-      .from('kmc_schedules')
-      .update({ is_available: false })
-      .eq('id', preferredScheduleId)
-
-    if (scheduleError) {
-      console.error('Failed to reserve schedule:', scheduleError)
-      // Don't block the user — registration already succeeded
-    }
-
-    setSubmitting(false)
-    setSuccess(true)
-
-    // Redirect to confirmation after 2 seconds
-    setTimeout(() => {
-      router.push(`/my-kmc-lessons`)
-    }, 2000)
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-muted-foreground animate-pulse">Memuat data...</div>
+      <div className="min-h-screen pt-32 pb-16">
+        <div className="max-w-xl mx-auto px-6">
+          <div className="flex items-center justify-center min-h-[30vh]">
+            <div className="text-muted-foreground animate-pulse">Memuat data...</div>
+          </div>
+        </div>
       </div>
     )
   }
 
-  if (hasExistingRegistration) {
+  if (success) {
     return (
       <div className="min-h-screen pt-32 pb-16">
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="glass rounded-2xl p-12 text-center border border-yellow-500/30 bg-yellow-500/5">
-            <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-5">
-              <FileText size={36} className="text-yellow-400" />
+        <div className="max-w-lg mx-auto px-6 text-center">
+          <div className="glass rounded-2xl p-10 border border-border">
+            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
+              <CheckCircle size={36} className="text-green-400" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-3">
-              Anda Sudah Terdaftar
-            </h2>
-            <p className="text-muted-foreground text-sm mb-6">
-              Pendaftaran KMC Anda sedang dalam proses review.
+            <h2 className="text-2xl font-bold text-foreground mb-2">Pendaftaran Terkirim! 🎉</h2>
+            <p className="text-muted-foreground mb-6">
+              Data kamu sudah kami terima. Admin akan konfirmasi maksimal 1×24 jam.
+              Pantau status di menu <strong>Kursus Saya</strong>.
             </p>
-            <Link
-              href="/my-kmc-lessons"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent/90 text-accent-foreground rounded-lg font-medium transition-colors"
-            >
-              Lihat Status Pendaftaran
-              <ArrowLeft size={16} className="rotate-180" />
-            </Link>
+            <div className="flex gap-3 justify-center">
+              <Link
+                href="/my-kmc-lessons"
+                className="px-5 py-2.5 bg-accent text-accent-foreground rounded-lg font-medium hover:bg-accent/90 transition-colors"
+              >
+                Lihat Kursus Saya
+              </Link>
+              <Link
+                href="/kmc/register"
+                className="px-5 py-2.5 bg-card text-foreground border border-border rounded-lg font-medium hover:bg-card/80 transition-colors"
+                onClick={() => { setSuccess(false); setRows([newRow()]) }}
+              >
+                Daftar Lagi
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -235,328 +262,205 @@ export default function KMCRegistration() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* ===== HERO SECTION ===== */}
-      <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-mesh-grid opacity-40 bg-noise" />
-        <div className="absolute inset-0 bg-gradient-radial from-accent/5 via-background/80 to-background" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+    <div className="min-h-screen pt-24 pb-16">
+      <div className="max-w-xl mx-auto px-6">
+        {/* Back */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors group mb-6"
+        >
+          <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
+          Kembali
+        </Link>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-          <div className="animate-fade-in">
-            <p className="inline-flex items-center gap-2 text-sm text-accent font-medium tracking-wider uppercase mb-4 border border-accent/20 rounded-full px-4 py-1.5 glass">
-              <Music size={14} />
-              Krisna Music Course
-            </p>
-          </div>
-          <h1 className="animate-fade-in delay-100 text-4xl md:text-6xl font-bold tracking-tight text-foreground mb-4">
-            Daftar Kursus Musik
-          </h1>
-          <p className="animate-fade-in delay-200 text-muted text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-            Mulai perjalanan musikal kamu bersama Krisna Music Course.
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground mb-1">Daftar Kursus Musik</h1>
+          <p className="text-muted-foreground text-sm">
+            Isi data siswa dan pilih jadwal. Admin akan konfirmasi maksimal 1×24 jam.
           </p>
         </div>
-      </section>
 
-      <div className="section-divider mx-6 md:mx-12" />
-
-      {/* ===== REGISTRATION FORM ===== */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-3xl mx-auto px-6">
-          {success ? (
-            <div className="glass rounded-2xl p-12 border border-border text-center animate-scale-in">
-              <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-5">
-                <CheckCircle size={36} className="text-green-400" />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Profile Section — collapsed card */}
+          <div className="glass rounded-xl p-5 border border-border">
+            <h2 className="text-sm font-semibold text-foreground mb-3">Data Diri</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Nama</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors"
+                  placeholder="Nama lengkap"
+                />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-3">
-                Pendaftaran Berhasil!
-              </h2>
-              <p className="text-muted-foreground text-sm mb-6">
-                Terima kasih sudah mendaftar. Admin kami akan menghubungi Anda via WhatsApp untuk konfirmasi jadwal.
-              </p>
-              <div className="animate-pulse">
-                <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto animate-spin" />
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  No. WhatsApp <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={whatsapp}
+                  onChange={e => setWhatsapp(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors"
+                  placeholder="0852xxxxxxxx"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Alamat</label>
+                <textarea
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors resize-none"
+                  placeholder="Alamat rumah (opsional)"
+                />
               </div>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Back link */}
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors group"
-              >
-                <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
-                Kembali ke Beranda
-              </Link>
+          </div>
 
-              {/* Error */}
-              {error && (
-                <div className="glass rounded-xl p-4 border border-red-500/30 bg-red-500/5">
-                  <p className="text-red-400 text-sm whitespace-pre-line">{error}</p>
-                </div>
+          {/* Students Section */}
+          <div className="glass rounded-xl p-5 border border-border">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-foreground">Pendaftaran Siswa</h2>
+              {rows.length > 1 && (
+                <span className="text-[11px] text-muted-foreground">{rows.length} siswa</span>
               )}
+            </div>
 
-              {/* User Info */}
-              <div className="glass rounded-2xl p-6 border border-border">
-                <div className="flex items-center gap-3 mb-4">
-                  <User size={20} className="text-accent" />
-                  <h3 className="text-lg font-semibold text-foreground">Informasi Akun</h3>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Email:</span>
-                    <span className="text-foreground">{user?.email}</span>
+            <div className="space-y-4">
+              {rows.map((row, i) => (
+                <div key={row.id} className="bg-card/50 rounded-xl p-4 border border-border/50">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-medium text-muted-foreground">Siswa {i + 1}</span>
+                    {rows.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeRow(row.id)}
+                        className="p-1 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Nama:</span>
-                    <span className="text-foreground">{profile?.full_name || '-'}</span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Data Murid */}
-              <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6">
-                <div className="flex items-center gap-3">
-                  <User size={20} className="text-accent" />
-                  <h3 className="text-xl font-semibold text-foreground">Data Murid</h3>
-                </div>
-
-                {/* Nama */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Nama <span className="text-accent">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
-                    placeholder="Masukkan nama"
-                    className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent transition-colors"
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Bisa nama sendiri atau nama anak (untuk orang tua yang mendaftarkan)
-                  </p>
-                </div>
-              </div>
-
-              {/* Pilih Instrument */}
-              <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6">
-                <div className="flex items-center gap-3">
-                  <Music size={20} className="text-accent" />
-                  <h3 className="text-xl font-semibold text-foreground">Pilih Instrument</h3>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {INSTRUMENTS.map((inst) => (
-                    <label
-                      key={inst.value}
-                      className={`relative block p-6 rounded-xl border cursor-pointer transition-all duration-200 ${
-                        instrument === inst.value
-                          ? 'border-accent bg-accent/10'
-                          : 'border-border hover:border-muted-foreground/30 bg-card'
-                      }`}
-                    >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Nama */}
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Nama <span className="text-red-400">*</span>
+                      </label>
                       <input
-                        type="radio"
-                        name="instrument"
-                        value={inst.value}
-                        checked={instrument === inst.value}
-                        onChange={(e) => setInstrument(e.target.value)}
-                        className="sr-only"
+                        type="text"
+                        value={row.name}
+                        onChange={e => updateRow(row.id, 'name', e.target.value)}
+                        className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors"
+                        placeholder="Nama siswa"
                         required
                       />
-                      <div className="text-4xl mb-3">{inst.icon}</div>
-                      <div className="text-sm font-medium text-foreground mb-1">{inst.label}</div>
-                      <div className="text-xs text-muted-foreground">{inst.description}</div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Pilih Jadwal Tersedia */}
-              <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6">
-                <div className="flex items-center gap-3">
-                  <Calendar size={20} className="text-accent" />
-                  <h3 className="text-xl font-semibold text-foreground">Pilih Jadwal</h3>
-                </div>
-
-                {availableSchedules.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Clock size={48} className="mx-auto text-muted-foreground mb-4" />
-                    <p className="text-sm text-muted-foreground">
-                      Belum ada jadwal tersedia.<br />
-                      Silakan hubungi admin untuk informasi lebih lanjut.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <p className="text-xs text-muted-foreground -mt-4 mb-4">
-                      Pilih jadwal yang sesuai dengan ketersediaanmu:
-                    </p>
-                    
-                    {/* Grouped by Day */}
-                    {orderedDays.map((day) => (
-                      <div key={day} className="space-y-3">
-                        <h4 className="text-sm font-semibold text-foreground">
-                          {day}
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-4 border-l-2 border-accent/30">
-                          {schedulesByDay[day].map((schedule) => (
-                            <label
-                              key={schedule.id}
-                              className={`relative block p-4 rounded-xl border transition-all duration-200 ${
-                                !schedule.is_available
-                                  ? 'border-red-500/20 bg-red-500/5 opacity-60 cursor-not-allowed'
-                                  : preferredScheduleId === schedule.id
-                                    ? 'border-accent bg-accent/10 shadow-lg shadow-accent/20 cursor-pointer'
-                                    : 'border-border hover:border-muted-foreground/30 bg-card cursor-pointer'
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name="preferredSchedule"
-                                value={schedule.id}
-                                checked={preferredScheduleId === schedule.id}
-                                onChange={(e) => setPreferredScheduleId(e.target.value)}
-                                disabled={!schedule.is_available}
-                                className="sr-only"
-                                required
-                              />
-                              <div className="flex items-center gap-3">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <Clock size={14} className="text-muted-foreground" />
-                                    <span className={`text-sm font-medium ${schedule.is_available ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                      {schedule.start_time.slice(0, 5)} - {schedule.end_time.slice(0, 5)}
-                                    </span>
-                                  </div>
-                                </div>
-                                {!schedule.is_available && (
-                                  <span className="inline-flex items-center gap-1 text-xs font-medium text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20">
-                                    Sudah Diisi
-                                  </span>
-                                )}
-                              </div>
-                            </label>
+                    </div>
+                    {/* Umur */}
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Umur</label>
+                      <input
+                        type="number"
+                        value={row.age}
+                        onChange={e => updateRow(row.id, 'age', e.target.value)}
+                        min={1}
+                        max={100}
+                        className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors"
+                        placeholder="Tahun"
+                      />
+                    </div>
+                    {/* Instrument */}
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Instrument <span className="text-red-400">*</span>
+                      </label>
+                      <select
+                        value={row.instrument}
+                        onChange={e => updateRow(row.id, 'instrument', e.target.value)}
+                        className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors appearance-none"
+                        required
+                      >
+                        <option value="">Pilih instrument</option>
+                        {INSTRUMENTS.map(inst => (
+                          <option key={inst.value} value={inst.value}>
+                            {inst.icon} {inst.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {/* Jadwal */}
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Jadwal <span className="text-red-400">*</span>
+                      </label>
+                      <div className="flex gap-2">
+                        <select
+                          value={row.day}
+                          onChange={e => updateRow(row.id, 'day', e.target.value)}
+                          className="flex-[3] px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors appearance-none"
+                        >
+                          {DAYS.map(d => (
+                            <option key={d} value={d}>{d}</option>
                           ))}
-                        </div>
+                        </select>
+                        <select
+                          value={row.time}
+                          onChange={e => updateRow(row.id, 'time', e.target.value)}
+                          className="flex-[4] px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors appearance-none"
+                        >
+                          {getAvailableTimeOptions(row.day).map(t => {
+                            const endH = parseInt(t.split(':')[0]) + 1
+                            const end = `${String(endH).padStart(2, '0')}:00`
+                            return (
+                              <option key={t} value={t}>{t}-{end}</option>
+                            )
+                          })}
+                        </select>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Informasi Tambahan */}
-              <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6">
-                <div className="flex items-center gap-3">
-                  <FileText size={20} className="text-accent" />
-                  <h3 className="text-xl font-semibold text-foreground">Informasi Tambahan</h3>
-                </div>
-
-                {/* Age Group */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Kelompok Umur
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    {AGE_GROUPS.map((group) => (
-                      <label
-                        key={group.value}
-                        className={`block p-3 rounded-lg border cursor-pointer text-center text-sm transition-all ${
-                          ageGroup === group.value
-                            ? 'border-accent bg-accent/10 text-accent'
-                            : 'border-border hover:border-muted-foreground/30 text-foreground'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="ageGroup"
-                          value={group.value}
-                          checked={ageGroup === group.value}
-                          onChange={(e) => setAgeGroup(e.target.value)}
-                          className="sr-only"
-                        />
-                        {group.label}
-                      </label>
-                    ))}
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                {/* Experience Level */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Level Pengalaman
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    {LEVELS.map((level) => (
-                      <label
-                        key={level.value}
-                        className={`block p-3 rounded-lg border cursor-pointer text-center text-sm transition-all ${
-                          experienceLevel === level.value
-                            ? 'border-accent bg-accent/10 text-accent'
-                            : 'border-border hover:border-muted-foreground/30 text-foreground'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="experienceLevel"
-                          value={level.value}
-                          checked={experienceLevel === level.value}
-                          onChange={(e) => setExperienceLevel(e.target.value)}
-                          className="sr-only"
-                        />
-                        <div className="flex items-center justify-center gap-1 mb-1">
-                          {[...Array(level.value === 'beginner' ? 1 : level.value === 'intermediate' ? 2 : 3)].map((_, i) => (
-                            <Star key={i} size={12} className="fill-accent text-accent" />
-                          ))}
-                        </div>
-                        {level.label}
-                      </label>
-                    ))}
-                  </div>
-                </div>
+            {/* Add row */}
+            <button
+              type="button"
+              onClick={addRow}
+              className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-colors"
+            >
+              <Plus size={16} />
+              Tambah Siswa
+            </button>
+          </div>
 
-                {/* Notes */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Catatan Tambahan
-                  </label>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Target musikal, genre yang disukai, atau informasi lainnya..."
-                    rows={4}
-                    className="w-full px-4 py-3 bg-card border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-accent transition-colors resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Opsional - bantu kami memahami kebutuhan belajar kamu
-                  </p>
-                </div>
-              </div>
-
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-4 bg-accent hover:bg-accent/90 disabled:bg-muted disabled:text-muted-foreground text-accent-foreground rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 group"
-              >
-                {submitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    Mengirim Pendaftaran...
-                  </>
-                ) : (
-                  <>
-                    <Send size={18} className="group-hover:translate-x-1 transition-transform" />
-                    Kirim Pendaftaran
-                  </>
-                )}
-              </button>
-            </form>
+          {/* Error */}
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400">
+              {error}
+            </div>
           )}
-        </div>
-      </section>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold rounded-xl transition-colors disabled:opacity-50"
+          >
+            {submitting ? (
+              <><Loader2 size={18} className="animate-spin" /> Mengirim...</>
+            ) : (
+              <><Send size={18} /> Daftar Sekarang</>
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
