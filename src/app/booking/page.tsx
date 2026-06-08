@@ -97,6 +97,7 @@ function BookingForm() {
         .from('products')
         .select('*')
         .eq('is_active', true)
+        .neq('category', 'kursus-musik')
         .order('sort_order', { ascending: true })
       setProducts(productData ?? [])
       setLoadingProducts(false)
