@@ -38,6 +38,15 @@ export default function AdminKMCMembers() {
   const [newStudentAge, setNewStudentAge] = useState('')
   const [addingStudent, setAddingStudent] = useState(false)
 
+  // Add member modal
+  const [showAddMember, setShowAddMember] = useState(false)
+  const [newMemberName, setNewMemberName] = useState('')
+  const [newMemberPhone, setNewMemberPhone] = useState('')
+  const [newMemberWhatsapp, setNewMemberWhatsapp] = useState('')
+  const [newMemberAddress, setNewMemberAddress] = useState('')
+  const [newMemberReferral, setNewMemberReferral] = useState('')
+  const [addingMember, setAddingMember] = useState(false)
+
   // Add enrollment modal
   const [showAddEnrollment, setShowAddEnrollment] = useState(false)
   const [addEnrollmentStudentId, setAddEnrollmentStudentId] = useState<string | null>(null)
@@ -98,6 +107,37 @@ export default function AdminKMCMembers() {
       console.error('Failed to fetch members:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleAddMember() {
+    if (!newMemberName.trim()) return
+    setAddingMember(true)
+    try {
+      const { data, error } = await supabase
+        .from('members')
+        .insert({
+          full_name: newMemberName.trim(),
+          phone: newMemberPhone.trim() || null,
+          whatsapp: newMemberWhatsapp.trim() || null,
+          address: newMemberAddress.trim() || null,
+          referral_source: newMemberReferral.trim() || null,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      await fetchMembers()
+      setShowAddMember(false)
+      setNewMemberName('')
+      setNewMemberPhone('')
+      setNewMemberWhatsapp('')
+      setNewMemberAddress('')
+      setNewMemberReferral('')
+    } catch (err: any) {
+      alert('Gagal menambahkan member: ' + err.message)
+    } finally {
+      setAddingMember(false)
     }
   }
 
@@ -235,9 +275,18 @@ export default function AdminKMCMembers() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">KMC Member</h1>
-        <p className="text-muted-foreground mt-1">Kelola member, siswa, dan pendaftaran kursus</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">KMC Member</h1>
+          <p className="text-muted-foreground mt-1">Kelola member, siswa, dan pendaftaran kursus</p>
+        </div>
+        <button
+          onClick={() => setShowAddMember(true)}
+          className="flex items-center gap-1.5 px-4 py-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-lg text-sm font-medium transition-colors shrink-0"
+        >
+          <Plus size={16} />
+          Tambah Member
+        </button>
       </div>
 
       {/* Stats */}
@@ -292,7 +341,11 @@ export default function AdminKMCMembers() {
             {searchQuery ? 'Member tidak ditemukan' : 'Belum ada member'}
           </h3>
           <p className="text-sm text-muted-foreground">
-            {searchQuery ? 'Coba kata kunci lain' : 'Member akan muncul setelah registrasi melalui website'}
+            {searchQuery ? 'Coba kata kunci lain' : (
+              <>
+                Klik <span className="text-accent">Tambah Member</span> untuk menambahkan member baru
+              </>
+            )}
           </p>
         </div>
       )}
@@ -487,6 +540,97 @@ export default function AdminKMCMembers() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Add Member Modal */}
+      {showAddMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setShowAddMember(false)}>
+          <div className="glass rounded-xl p-6 border border-border w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-foreground">Tambah Member</h3>
+              <button onClick={() => setShowAddMember(false)} className="p-1 hover:bg-card rounded-lg text-muted-foreground hover:text-foreground">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={e => { e.preventDefault(); handleAddMember() }} className="space-y-4">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Nama Lengkap *</label>
+                <input
+                  type="text"
+                  value={newMemberName}
+                  onChange={(e) => setNewMemberName(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
+                  placeholder="Nama orang tua / wali"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">No. Telepon</label>
+                  <input
+                    type="text"
+                    value={newMemberPhone}
+                    onChange={(e) => setNewMemberPhone(e.target.value)}
+                    className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
+                    placeholder="Contoh: 0812..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">WhatsApp</label>
+                  <input
+                    type="text"
+                    value={newMemberWhatsapp}
+                    onChange={(e) => setNewMemberWhatsapp(e.target.value)}
+                    className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
+                    placeholder="Contoh: 0812..."
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Alamat</label>
+                <textarea
+                  value={newMemberAddress}
+                  onChange={(e) => setNewMemberAddress(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent resize-none"
+                  rows={2}
+                  placeholder="Alamat rumah"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">Tahu dari</label>
+                <select
+                  value={newMemberReferral}
+                  onChange={(e) => setNewMemberReferral(e.target.value)}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
+                >
+                  <option value="">Pilih sumber...</option>
+                  <option value="teman">Teman / Keluarga</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="google">Google</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="jalan">Lewat jalan / Lihat papan nama</option>
+                  <option value="lainnya">Lainnya</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddMember(false)}
+                  className="flex-1 px-3 py-2 bg-card hover:bg-card/80 text-foreground rounded-lg text-sm font-medium transition-colors border border-border"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={addingMember || !newMemberName.trim()}
+                  className="flex-1 px-3 py-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  {addingMember ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
