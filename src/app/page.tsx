@@ -68,7 +68,12 @@ function StarRating({ rating }: { rating: number }) {
 async function MemberDashboard() {
   const sb = await createSupabaseServer()
   const { data: { session } } = await sb.auth.getSession()
-  const userEmail = session?.user?.email ?? ''
+
+  // getUser() fallback — verify token via Supabase Auth API
+  const { data: { user: authUser } } = await sb.auth.getUser()
+  const user = session?.user ?? authUser ?? undefined
+
+  const userEmail = user?.email ?? ''
 
   const { data: bookings } = await sb
     .from('bookings')
@@ -89,7 +94,7 @@ async function MemberDashboard() {
             </p>
           </div>
           <h1 className="animate-fade-in delay-100 text-3xl md:text-4xl font-bold text-foreground">
-            Halo, <span className="text-accent">{session?.user?.user_metadata?.full_name ?? userEmail.split('@')[0]}</span> 👋
+            Halo, <span className="text-accent">{user?.user_metadata?.full_name ?? userEmail.split('@')[0]}</span> 👋
           </h1>
           <p className="animate-fade-in delay-200 text-muted-foreground mt-2">
             {bookingList.length > 0
@@ -99,7 +104,19 @@ async function MemberDashboard() {
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12 animate-fade-in-up delay-300">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 animate-fade-in-up delay-300">
+          <Link
+            href="/my-kmc-lessons"
+            className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-purple-500/40 transition-all group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500/20 transition-colors shrink-0">
+              <Music size={20} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">KMC</p>
+              <p className="text-xs text-muted-foreground">Kursus Musik saya</p>
+            </div>
+          </Link>
           <Link
             href="/booking"
             className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-accent/30 transition-all group"
@@ -650,11 +667,15 @@ export default async function HomePage() {
   const sb = await createSupabaseServer()
   const { data: { session } } = await sb.auth.getSession()
 
-  if (session?.user) {
+  // getUser() fallback — verify token via Supabase Auth API
+  const { data: { user: authUser } } = await sb.auth.getUser()
+  const user = session?.user ?? authUser ?? undefined
+
+  if (user) {
     const { data: profile } = await sb
       .from('profiles')
       .select('role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
 
     const role = profile?.role

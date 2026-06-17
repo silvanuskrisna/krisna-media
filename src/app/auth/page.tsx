@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useState, type FormEvent } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock, User, Loader2 } from 'lucide-react'
 
@@ -13,7 +13,6 @@ const supabase = createBrowserClient(
 type AuthTab = 'login' | 'signup'
 
 function AuthForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirectPath = searchParams.get('redirect') || '/'
 
@@ -46,8 +45,7 @@ function AuthForm() {
       return
     }
 
-    router.push(redirectPath)
-    router.refresh()
+    window.location.href = redirectPath
   }
 
   const handleResetPassword = async (e: FormEvent) => {
