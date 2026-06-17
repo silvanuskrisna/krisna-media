@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { Calendar, Clock, ArrowLeft, Send, CheckCircle, User, Phone, Mail, MessageCircle, FileText, Tag, Banknote, Wallet, Upload } from 'lucide-react'
 import { cn, formatPrice, getWhatsAppUrl } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
-import type { Product, Promo, HappyHourSettings } from '@/lib/types'
+import { AddOnSection } from '@/components/AddOnSection'
+import type { Product, Promo, HappyHourSettings, StudioAddonGear } from '@/lib/types'
 
 function BookingForm() {
   const router = useRouter()
@@ -16,6 +17,7 @@ function BookingForm() {
   const [products, setProducts] = useState<Product[]>([])
   const [promos, setPromos] = useState<Promo[]>([])
   const [happyHour, setHappyHour] = useState<HappyHourSettings | null>(null)
+  const [addonGears, setAddonGears] = useState<StudioAddonGear[]>([])
   const [bankInfo, setBankInfo] = useState({ bank_name: '', bank_account: '', bank_holder: '' })
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -37,6 +39,10 @@ function BookingForm() {
   const [selectedPromoId, setSelectedPromoId] = useState('')
   const [paymentProof, setPaymentProof] = useState<File | null>(null)
   const [uploadingProof, setUploadingProof] = useState(false)
+  
+  // Add-on states
+  const [hourAddons, setHourAddons] = useState(0)
+  const [selectedGearIds, setSelectedGearIds] = useState<string[]>([])
 
   // Calculate if happy hour applies
   const selectedProduct = products.find((p) => p.id === selectedProductId)
@@ -49,7 +55,7 @@ function BookingForm() {
     return startTime >= happyHour.start_time && startTime < happyHour.end_time
   })()
 
-  // Calculate price
+  // Calculate base price
   const calculatedPrice = (() => {
     if (!selectedProduct) return null
     const basePrice = selectedProduct.price
@@ -88,6 +94,25 @@ function BookingForm() {
 
     return basePrice
   })()
+
+  // Calculate add-on total
+  const addonTotal = (() => {
+    let total = 0
+    
+    // Hour add-ons: 85000 per jam
+    total += hourAddons * 85000
+    
+    // Gear add-ons
+    selectedGearIds.forEach(gearId => {
+      const gear = addonGears.find(g => g.id === gearId)
+      if (gear) total += gear.price
+    })
+    
+    return total
+  })()
+
+  // Calculate total price including add-ons
+  const totalPrice = (calculatedPrice || 0) + addonTotal
 
   // Fetch products, promos, settings
   useEffect(() => {
@@ -148,6 +173,14 @@ function BookingForm() {
         bank_account: (bankAccR.data?.value as any)?.bank_account ?? '',
         bank_holder: (bankHolderR.data?.value as any)?.bank_holder ?? '',
       })
+
+      // Addon gears
+      const { data: gearData } = await supabase
+        .from('studio_addon_gears')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+      if (gearData) setAddonGears(gearData)
     }
 
     fetchData()
@@ -333,7 +366,7 @@ function BookingForm() {
     }
 
     // ───── HITUNG TOTAL HARGA ─────
-    const totalPrice = calculatedPrice
+    const finalTotalPrice = (calculatedPrice || 0) + addonTotal
 
     // ───── GENERATE BOOKING CODE ─────
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -351,7 +384,7 @@ function BookingForm() {
       product_id: selectedProductId,
       product_name: productName,
       booking_code: bookingCode,
-      total_price: totalPrice,
+      total_price: finalTotalPrice,
       booking_date: bookingDate,
       start_time: startTime || null,
       end_time: endTime || null,
@@ -373,6 +406,57 @@ function BookingForm() {
       setError('Gagal mengirim booking. Silakan coba lagi.')
       setSubmitting(false)
       return
+    }
+
+    const bookingId = data?.id
+
+    // ───── SAVE ADD-ONS ─────
+    if (bookingId && (hourAddons > 0 || selectedGearIds.length > 0)) {
+      try {
+        const addonsToSave: any[] = []
+
+        // Hour add-ons
+        if (hourAddons > 0) {
+          addonsToSave.push({
+            booking_id: bookingId,
+            addon_type: 'hour',
+            addon_id: null,
+            addon_name: `${hourAddons} Jam Tambahan`,
+            quantity: hourAddons,
+            unit_price: 85000,
+            subtotal: hourAddons * 85000,
+          })
+        }
+
+        // Gear add-ons
+        selectedGearIds.forEach(gearId => {
+          const gear = addonGears.find(g => g.id === gearId)
+          if (gear) {
+            addonsToSave.push({
+              booking_id: bookingId,
+              addon_type: 'gear',
+              addon_id: gearId,
+              addon_name: gear.name,
+              quantity: 1,
+              unit_price: gear.price,
+              subtotal: gear.price,
+            })
+          }
+        })
+
+        if (addonsToSave.length > 0) {
+          const { error: addonError } = await supabase
+            .from('booking_addons')
+            .insert(addonsToSave)
+
+          if (addonError) {
+            console.error('Warning: Failed to save add-ons:', addonError)
+            // Don't fail the entire booking, just log warning
+          }
+        }
+      } catch (err) {
+        console.error('Error saving add-ons:', err)
+      }
     }
 
     // ───── UPDATE PROMO QUOTA ─────
@@ -629,7 +713,7 @@ function BookingForm() {
                           Total Harga
                         </p>
                         <span className="text-2xl font-bold text-foreground">
-                          {formatPrice(calculatedPrice)}
+                          {formatPrice(totalPrice)}
                         </span>
                       </div>
                       <div className="text-right">
@@ -761,6 +845,24 @@ function BookingForm() {
                     className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 resize-none"
                   />
                 </div>
+              </div>
+
+              {/* Add-Ons */}
+              <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up delay-100">
+                <AddOnSection
+                  addonGears={addonGears}
+                  hourAddons={hourAddons}
+                  selectedGearIds={selectedGearIds}
+                  addonTotal={addonTotal}
+                  onHourAddonsChange={setHourAddons}
+                  onGearToggle={(gearId) => {
+                    setSelectedGearIds(prev =>
+                      prev.includes(gearId)
+                        ? prev.filter(id => id !== gearId)
+                        : [...prev, gearId]
+                    )
+                  }}
+                />
               </div>
 
               {/* Promo — dipindah ke atas (sebelum Data Pemesan) */}
