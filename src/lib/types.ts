@@ -38,6 +38,31 @@ export interface Booking {
   updated_at: string
 }
 
+export interface StudioAddonGear {
+  id: string
+  name: string
+  price: number
+  category: 'microphone' | 'headphone' | 'cable' | 'effect' | 'other'
+  description: string | null
+  stock: number | null
+  is_active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface BookingAddon {
+  id: string
+  booking_id: string
+  addon_type: 'hour' | 'gear'
+  addon_id: string | null
+  addon_name: string
+  quantity: number
+  unit_price: number
+  subtotal: number
+  created_at: string
+}
+
 export interface Promo {
   id: string
   name: string
