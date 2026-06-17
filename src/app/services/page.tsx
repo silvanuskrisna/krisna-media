@@ -66,7 +66,7 @@ export default async function ServicesPage({
         <div className="fixed bottom-0 left-0 w-1/3 h-1/3 bg-accent/3 blur-[100px] rounded-full pointer-events-none z-0" />
 
       {/* ===== HERO SECTION ===== */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
+      <section className="relative pt-28 pb-16 md:pt-40 md:pb-28 overflow-hidden">
         <div className="absolute inset-0 bg-mesh-grid opacity-40 bg-noise" />
         <div className="absolute inset-0 bg-gradient-radial from-accent/8 via-background/90 to-background" />
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
@@ -147,7 +147,7 @@ export default async function ServicesPage({
       <PromoBanner />
 
       {/* ===== PRODUCTS GRID ===== */}
-      <section className="py-16 md:py-24">
+      <section className="py-12 md:py-24">
         <div className="max-w-6xl mx-auto px-6">
           {/* KMC Special Card */}
           {!activeCategory && !searchQuery && (

@@ -273,7 +273,7 @@ async function LandingPage() {
                 </span>
               </div>
 
-              <h1 className="animate-fade-in delay-100 text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.08]">
+              <h1 className="animate-fade-in delay-100 text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.08]">
                 Krisna{' '}
                 <span className="text-accent">Media</span>
               </h1>
@@ -358,9 +358,9 @@ async function LandingPage() {
       {/* ===== STATS BAR ===== */}
       <div className="section-divider mx-6 md:mx-12" />
 
-      <section className="py-16 md:py-20">
+      <section className="py-12 md:py-20">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-12">
             {stats.map((stat, i) => (
               <div
                 key={stat.label}
@@ -388,10 +388,10 @@ async function LandingPage() {
       <PromoBanner />
 
       {/* ===== FEATURED SERVICES ===== */}
-      <section className="py-20 md:py-28">
+      <section className="py-14 md:py-28">
         <div className="max-w-6xl mx-auto px-6">
           {/* Section header */}
-          <div className="text-center mb-16 animate-fade-in">
+          <div className="text-center mb-10 md:mb-16 animate-fade-in">
             <p className="text-accent text-sm font-semibold tracking-widest uppercase mb-3">
               Layanan
             </p>
@@ -486,10 +486,10 @@ async function LandingPage() {
       {/* ===== TESTIMONIALS PREVIEW ===== */}
       <div className="section-divider mx-6 md:mx-12" />
 
-      <section className="py-20 md:py-28">
+      <section className="py-14 md:py-28">
         <div className="max-w-5xl mx-auto px-6">
           {/* Section header */}
-          <div className="text-center mb-16 animate-fade-in">
+          <div className="text-center mb-10 md:mb-16 animate-fade-in">
             <p className="text-accent text-sm font-semibold tracking-widest uppercase mb-3">
               Testimoni
             </p>
@@ -563,7 +563,7 @@ async function LandingPage() {
       {/* ===== KMC SECTION ===== */}
       <div className="section-divider mx-6 md:mx-12" />
 
-      <section className="py-20 md:py-28 relative overflow-hidden">
+      <section className="py-14 md:py-28 relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-background to-pink-500/10" />
         <div className="absolute inset-0 bg-mesh-grid opacity-30 bg-noise" />
@@ -632,7 +632,7 @@ async function LandingPage() {
       {/* ===== CTA SECTION ===== */}
       <div className="section-divider mx-6 md:mx-12" />
 
-      <section className="py-20 md:py-28 relative overflow-hidden">
+      <section className="py-14 md:py-28 relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-background to-accent/10" />
         <div className="absolute inset-0 bg-mesh-grid opacity-30 bg-noise" />

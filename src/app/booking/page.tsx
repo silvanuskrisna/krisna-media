@@ -403,7 +403,7 @@ function BookingForm() {
   return (
     <>
       {/* ===== HERO SECTION ===== */}
-      <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 overflow-hidden">
+      <section className="relative pt-28 pb-12 md:pt-40 md:pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-mesh-grid opacity-40 bg-noise" />
         <div className="absolute inset-0 bg-gradient-radial from-accent/5 via-background/80 to-background" />
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
@@ -427,7 +427,7 @@ function BookingForm() {
       <div className="section-divider mx-6 md:mx-12" />
 
       {/* ===== BOOKING FORM ===== */}
-      <section className="py-16 md:py-24">
+      <section className="py-12 md:py-24">
         <div className="max-w-3xl mx-auto px-6">
           {success ? (
             <div className="glass rounded-2xl p-12 border border-border text-center animate-scale-in">
@@ -466,7 +466,7 @@ function BookingForm() {
 
               {/* Promo — tampil di atas biar langsung kelihatan */}
               {availablePromos.length > 0 && !isHappyHourActive && (
-                <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-4 animate-fade-in-up">
+                <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-4 animate-fade-in-up">
                   <h2 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2">
                     <Tag size={18} />
                     Promo Tersedia 🎪
@@ -509,7 +509,7 @@ function BookingForm() {
               )}
 
               {/* Form card — Data Pemesan */}
-              <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6 animate-fade-in-up">
+              <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up">
                 <h2 className="text-xl font-semibold text-foreground mb-2">
                   Data Pemesan
                 </h2>
@@ -572,7 +572,7 @@ function BookingForm() {
               </div>
 
               {/* Service & Schedule */}
-              <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6 animate-fade-in-up delay-100">
+              <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up delay-100">
                 <h2 className="text-xl font-semibold text-foreground mb-2">
                   Layanan & Jadwal
                 </h2>
@@ -766,7 +766,7 @@ function BookingForm() {
               {/* Promo — dipindah ke atas (sebelum Data Pemesan) */}
 
               {/* Pembayaran */}
-              <div className="glass rounded-2xl p-8 md:p-10 border border-border space-y-6 animate-fade-in-up delay-200">
+              <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up delay-200">
                 <h2 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2">
                   <Wallet size={18} />
                   Pembayaran
