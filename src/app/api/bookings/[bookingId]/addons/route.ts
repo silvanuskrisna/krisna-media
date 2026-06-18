@@ -4,21 +4,13 @@ import { supabase } from '@/lib/supabase'
 /**
  * POST /api/bookings/[bookingId]/addons
  * Save add-ons for a booking (hours + gears)
- * 
- * Request body:
- * {
- *   addons: [
- *     { addon_type: 'hour', addon_name: '1 Hour Add-On', quantity: 1, unit_price: 85000, subtotal: 85000 },
- *     { addon_type: 'gear', addon_id: 'uuid', addon_name: 'Microphone', quantity: 1, unit_price: 200000, subtotal: 200000 }
- *   ]
- * }
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
-    const { bookingId } = params
+    const { bookingId } = await params
     const body = await request.json()
     const { addons } = body
 
@@ -66,10 +58,10 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
-    const { bookingId } = params
+    const { bookingId } = await params
 
     const { data, error } = await supabase
       .from('booking_addons')
