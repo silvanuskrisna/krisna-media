@@ -30,7 +30,7 @@ Booking kamu untuk:
 🔊 {{paket}}
 
 Sudah kami setujui! Untuk mengamankan jadwal, mohon transfer DP sebesar {{dp}} ke:
-🏦 BCA — 1234567890 — a.n. Krisna Media
+🏦 {{rekening}}
 Paling lambat: {{batas_waktu}}
 
 Konfirmasi setelah transfer ya!$$, 2),
@@ -83,7 +83,7 @@ Sisa pembayaran: {{sisa}}
 Paling lambat: H-1 / hari H (sesuai kesepakatan)
 
 Transfer ke:
-🏦 BCA — 1234567890 — a.n. Krisna Media
+🏦 {{rekening}}
 
 Ada yang mau ditanyakan? Feel free to chat ya!$$, 7),
 
@@ -94,7 +94,7 @@ $$Halo Kak {{nama}}! Ini remind dari kami 😊
 💰 Sisa pembayaran: {{sisa}}
 
 Mohon dilunasi sebelum {{batas_waktu}}. Transfer ke:
-🏦 BCA — 1234567890 — a.n. Krisna Media
+🏦 {{rekening}}
 
 Konfirmasi setelah transfer ya!$$, 8),
 

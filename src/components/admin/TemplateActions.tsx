@@ -140,7 +140,10 @@ export default function TemplateActions({ booking }: Props) {
       <div className="flex flex-wrap gap-2">
         {triggerEvents.map(event => {
           const tpl = getTemplateForEvent(event)
-          if (!tpl) return null
+          const isGeneral = event === 'general'
+
+          // General/Template Lainnya: selalu tampil tanpa perlu template
+          if (!tpl && !isGeneral) return null
 
           const labels: Record<string, string> = {
             booking_confirm: 'Konfirmasi Booking 📩',
@@ -159,8 +162,6 @@ export default function TemplateActions({ booking }: Props) {
             cancellation: 'bg-red-600/20 text-red-400 hover:bg-red-600/30',
             general: 'bg-[#262626] text-foreground hover:bg-[#333]',
           }
-
-          const isGeneral = event === 'general'
 
           return (
             <button
