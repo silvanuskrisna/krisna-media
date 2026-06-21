@@ -7,7 +7,7 @@ TRUNCATE admin_templates RESTART IDENTITY CASCADE;
 
 INSERT INTO admin_templates (name, category, trigger_event, content, sort_order) VALUES
 ('Konfirmasi Booking', 'booking', 'booking_confirm',
-$$Halo {{nama}}! Terima kasih udah booking di Krisna Media 🎉
+$$Halo Kak {{nama}}! Terima kasih udah booking di Krisna Media 🎉
 
 Ini detail pesanan kamu:
 📅 Tanggal: {{tanggal}}
@@ -18,7 +18,7 @@ Ini detail pesanan kamu:
 Booking kamu sudah kami terima. Kami akan segera hubungi kamu untuk konfirmasi lebih lanjut ya!$$, 1),
 
 ('Booking Dikonfirmasi (DP)', 'booking', 'payment_reminder',
-$$Halo {{nama}}! Konfirmasi dari kami ✅
+$$Halo Kak {{nama}}! Konfirmasi dari kami ✅
 
 Booking kamu untuk:
 📅 {{tanggal}}
@@ -31,21 +31,21 @@ Paling lambat: {{batas_waktu}}
 Konfirmasi setelah transfer ya!$$, 2),
 
 ('After Event — Terima Kasih', 'general', 'after_event',
-$$Halo {{nama}}! Terima kasih banyak udah pakai Krisna Media untuk {{tanggal}}! 🙌
+$$Halo Kak {{nama}}! Terima kasih banyak udah pakai Krisna Media untuk {{tanggal}}! 🙌
 
 Semua alat beres? Acaranya lancar? Kami tunggu feedbacknya ya!
 
 Kalau ada kendala sound/lighting/studio, jangan sungkan lapor. Sampai ketemu di acara berikutnya! 🔥$$, 3),
 
 ('Minta Testimonial', 'general', 'ask_testimonial',
-$$Halo {{nama}}! Gimana layanan Krisna Media buat {{paket}} kemarin? Puas? 😊
+$$Halo Kak {{nama}}! Gimana layanan Krisna Media buat {{paket}} kemarin? Puas? 😊
 
 Kalau berkenan, boleh minta testimonialnya? Tulis aja di sini, nanti kami tampilkan di website 🙏
 
 Atau kalau ada kritik/saran, kita terbuka banget!$$, 4),
 
 ('Info Pembatalan', 'booking', 'cancellation',
-$$Halo {{nama}}, dengan berat hati kami konfirmasi pembatalan untuk {{tanggal}} ya.
+$$Halo Kak {{nama}}, dengan berat hati kami konfirmasi pembatalan untuk {{tanggal}} ya.
 
 Untuk pembayaran yang sudah diterima:
 ✅ (Jika refundable) — Refund (persen)%, maks (waktu) kerja
@@ -54,7 +54,7 @@ Untuk pembayaran yang sudah diterima:
 Maaf dan terima kasih. Kalau lain waktu butuh lagi, jangan ragu!$$, 5),
 
 ('Booking Baru Masuk (Info)', 'booking', NULL,
-$$Halo {{nama}}! Terima kasih udah booking di Krisna Media 🎉
+$$Halo Kak {{nama}}! Terima kasih udah booking di Krisna Media 🎉
 
 Ini detail pesanan kamu:
 📅 Tanggal: {{tanggal}}
@@ -65,7 +65,7 @@ Ini detail pesanan kamu:
 Kami akan segera hubungi kamu untuk konfirmasi lebih lanjut. Stay tuned ya!$$, 6),
 
 ('Konfirmasi Booking (DP Diterima)', 'booking', NULL,
-$$Halo {{nama}}! Konfirmasi dari kami ✅
+$$Halo Kak {{nama}}! Konfirmasi dari kami ✅
 
 DP sebesar {{dp}} sudah kami terima untuk booking:
 📅 {{tanggal}}
@@ -82,7 +82,7 @@ Transfer ke:
 Ada yang mau ditanyakan? Feel free to chat ya!$$, 7),
 
 ('Reminder Pelunasan', 'payment', NULL,
-$$Halo {{nama}}! Ini remind dari kami 😊
+$$Halo Kak {{nama}}! Ini remind dari kami 😊
 
 📌 Booking kamu: {{tanggal}} — {{paket}}
 💰 Sisa pembayaran: {{sisa}}
@@ -93,30 +93,30 @@ Mohon dilunasi sebelum {{batas_waktu}}. Transfer ke:
 Konfirmasi setelah transfer ya!$$, 8),
 
 ('Pelunasan Diterima', 'payment', NULL,
-$$Halo {{nama}}! Pelunasan {{total}} sudah kami terima ✅
+$$Halo Kak {{nama}}! Pelunasan {{total}} sudah kami terima ✅
 
 Semua beres untuk {{tanggal}}! Tim kami siap sedia 🎶
 Sampai ketemu di {{lokasi}} / silakan ambil alat di workshop ya! 🙌$$, 9),
 
 ('Tanya Harga — Sound System', 'general', NULL,
-$$Halo {{nama}}! Terima kasih udah menghubungi Krisna Media 😊
+$$Halo Kak {{nama}}! Terima kasih udah menghubungi Krisna Media 😊
 
 Untuk sound system, berikut paket kami:
 🔊 Basic — Rp 1.500.000/paket | 🔊 Medium — Rp 3.000.000/paket | 🔊 Large — Rp 5.000.000/paket$$, 10),
 
 ('Tanya Harga — Lighting', 'general', NULL,
-$$Halo {{nama}}! Untuk lighting, ini paket kami:
+$$Halo Kak {{nama}}! Untuk lighting, ini paket kami:
 💡 Basic — Rp 1.000.000/paket | 💡 Medium — Rp 2.500.000/paket | 💡 Large — Rp 4.500.000/paket$$, 11),
 
 ('Tanya Harga — Studio Musik', 'studio', NULL,
-$$Halo {{nama}}! Untuk studio musik:
+$$Halo Kak {{nama}}! Untuk studio musik:
 🎵 Per Jam — Rp 75.000 | 🎵 Paket 3 Jam — Rp 200.000 | 🎵 Paket 5 Jam — Rp 300.000$$, 12),
 
 ('Reschedule Jadwal', 'booking', NULL,
-$$Halo {{nama}}, untuk perubahan jadwal dari {{tanggal}} tidak masalah kok. Silakan pilih tanggal baru dan konfirm ya!$$, 13),
+$$Halo Kak {{nama}}, untuk perubahan jadwal dari {{tanggal}} tidak masalah kok. Silakan pilih tanggal baru dan konfirm ya!$$, 13),
 
 ('Follow-up (No Response)', 'general', NULL,
-$$Halo {{nama}}! Numpang nanya lagi 😊 Masih tertarik sama layanan Krisna Media? Atau ada yang mau ditanyain?$$, 14),
+$$Halo Kak {{nama}}! Numpang nanya lagi 😊 Masih tertarik sama layanan Krisna Media? Atau ada yang mau ditanyain?$$, 14),
 
 ('Tanya Kursus Musik (KMC)', 'kmc', NULL,
-$$Halo {{nama}}! Tertarik kursus musik? 🎹 Krisna Music Course buka: 🎸 Gitar | 🎹 Piano | 🥁 Drum$$, 15);
+$$Halo Kak {{nama}}! Tertarik kursus musik? 🎹 Krisna Music Course buka: 🎸 Gitar | 🎹 Piano | 🥁 Drum$$, 15);

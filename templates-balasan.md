@@ -11,7 +11,7 @@
 *Konfirmasi ke customer bahwa bookingnya diterima.*
 
 ```
-Halo [Nama]! Terima kasih udah booking di Krisna Media 🎉
+Halo Kak [Nama]! Terima kasih udah booking di Krisna Media 🎉
 
 Ini detail pesanan kamu:
 📅 Tanggal: [tanggal]
@@ -29,7 +29,7 @@ Kami akan segera hubungi kamu untuk konfirmasi lebih lanjut. Stay tuned ya!
 *Setelah customer transfer DP.*
 
 ```
-Halo [Nama]! Konfirmasi dari kami ✅
+Halo Kak [Nama]! Konfirmasi dari kami ✅
 
 DP sebesar Rp [jumlah] sudah kami terima untuk booking:
 📅 [tanggal]
@@ -53,7 +53,7 @@ Ada yang mau ditanyakan? Feel free to chat ya!
 *H-1 sebelum event/sewa.*
 
 ```
-Halo [Nama]! Ini remind dari kami 😊
+Halo Kak [Nama]! Ini remind dari kami 😊
 
 📌 Booking kamu: [tanggal] — [paket]
 💰 Sisa pembayaran: Rp [sisa]
@@ -71,7 +71,7 @@ Konfirmasi setelah transfer ya!
 *Setelah full payment.*
 
 ```
-Halo [Nama]! Pelunasan Rp [jumlah] sudah kami terima ✅
+Halo Kak [Nama]! Pelunasan Rp [jumlah] sudah kami terima ✅
 
 Semua beres untuk [tanggal]! Tim kami siap sedia 🎶
 Sampai ketemu di [lokasi] / silakan ambil alat di workshop ya! 🙌
@@ -84,7 +84,7 @@ Sampai ketemu di [lokasi] / silakan ambil alat di workshop ya! 🙌
 *Balasan standar untuk inquiry — tinggal pilih kategori yang ditanya.*
 
 ```
-Halo [Nama]! Terima kasih udah menghubungi Krisna Media 😊
+Halo Kak [Nama]! Terima kasih udah menghubungi Krisna Media 😊
 
 Untuk [kebutuhan], berikut paket dan harga kami:
 
@@ -123,7 +123,7 @@ Mau lihat detail lengkapnya? Bisa cek krisnamedia.id atau bilang aja mau booking
 *Khusus untuk inquiry studio.*
 
 ```
-Halo [Nama]! Untuk studio musik, kita ada:
+Halo Kak [Nama]! Untuk studio musik, kita ada:
 
 🎵 RENTAL STUDIO
   • Per Jam — Rp 75.000
@@ -147,7 +147,7 @@ Bisa cek ketersediaan jam di krisnamedia.id atau langsung tanya aja!
 *Ketika customer minta ganti jadwal.*
 
 ```
-Halo [Nama], untuk perubahan jadwal dari [tanggal_lama] tidak masalah kok.
+Halo Kak [Nama], untuk perubahan jadwal dari [tanggal_lama] tidak masalah kok.
 
 Silakan pilih tanggal baru yang kamu mau dari opsi ini:
 • [tgl1]
@@ -166,7 +166,7 @@ Konfirm aja tanggal mana yang cocok!
 *Jika customer batal.*
 
 ```
-Halo [Nama], dengan berat hati kami konfirmasi pembatalan untuk [tanggal] ya.
+Halo Kak [Nama], dengan berat hati kami konfirmasi pembatalan untuk [tanggal] ya.
 
 Untuk pembayaran yang sudah diterima:
 ✅ [Jika refundable] — Akan kami refund [persen]%, paling lambat [waktu] kerja.
@@ -182,7 +182,7 @@ Maaf dan terima kasih. Kalau lain waktu butuh lagi, jangan ragu ya!
 *H+1 setelah acara/sewa.*
 
 ```
-Halo [Nama]! Terima kasih banyak udah pakai Krisna Media kemarin! 🙌
+Halo Kak [Nama]! Terima kasih banyak udah pakai Krisna Media kemarin! 🙌
 
 Semua alat beres? Acaranya lancar? Kami tunggu feedbacknya ya!
 
@@ -197,7 +197,7 @@ Kalau ada kendala alat (sound/lighting/studio), jangan sungkan lapor. Sampai ket
 
 ```
 ⏰ PENGAMBILAN ALAT
-Halo [Nama]! Alat untuk [tanggal] udah siap diambil.
+Halo Kak [Nama]! Alat untuk [tanggal] udah siap diambil.
 Lokasi: [alamat workshop/studio]
 Jam operasional: [jam]
 
@@ -206,7 +206,7 @@ Jangan lupa bawa identitas ya!
 ---
 
 🔄 PENGEMBALIAN ALAT
-Halo [Nama], untuk pengembalian alat mohon dikembalikan paling lambat [jam] di [lokasi].
+Halo Kak [Nama], untuk pengembalian alat mohon dikembalikan paling lambat [jam] di [lokasi].
 
 Kalau ada kerusakan / kehilangan akan kami infokan.
 Terima kasih!
@@ -219,7 +219,7 @@ Terima kasih!
 *Beberapa hari setelah acara.*
 
 ```
-Halo [Nama]! Gimana [sound/lighting/studio]-nya kemarin? Puas? 😊
+Halo Kak [Nama]! Gimana [sound/lighting/studio]-nya kemarin? Puas? 😊
 
 Kalau berkenan, boleh minta testimonialnya? Bisa tulis langsung di sini aja, nanti kami tampilkan di website 🙏
 
@@ -233,7 +233,7 @@ Atau kalau ada kritik/saran, kita terbuka banget!
 *Kalau customer udah lama gak reply.*
 
 ```
-Halo [Nama]! Numpang nanya lagi 😊
+Halo Kak [Nama]! Numpang nanya lagi 😊
 
 Masih tertarik sama layanan Krisna Media? Atau masih ada yang mau ditanyain?
 
@@ -247,7 +247,7 @@ Kalau ada perubahan rencana juga gapapa, kasih kabar aja ya!
 *Untuk inquiry les musik.*
 
 ```
-Halo [Nama]! Tertarik kursus musik di Krisna Music Course? 🎹
+Halo Kak [Nama]! Tertarik kursus musik di Krisna Music Course? 🎹
 
 Kita buka kursus untuk:
 🎸 Gitar  |  🎹 Piano  |  🥁 Drum
