@@ -23,6 +23,8 @@ export interface RenderSettings {
  * {{bank_nama}}     → nama bank saja
  * {{bank_no}}       → no rekening saja
  * {{bank_an}}       → atas nama saja
+ * {{promo}}         → nama promo (jika booking pake promo)
+ * {{promo_info}}    → info promo lengkap (jika booking pake promo)
  * {{dp}}            → (manual)
  * {{sisa}}          → (manual)
  * {{batas_waktu}}   → (manual)
@@ -58,6 +60,10 @@ export function renderTemplate(
     '{{bank_nama}}': settings?.bank_name || '(bank)',
     '{{bank_no}}': settings?.bank_account || '(no rekening)',
     '{{bank_an}}': settings?.bank_holder || '(a.n.)',
+    '{{promo}}': booking.promo_name || '',
+    '{{promo_info}}': booking.promo_name
+      ? `Promo: ${booking.promo_name}${booking.total_price ? ` — Rp ${booking.total_price.toLocaleString('id-ID')}` : ''}`
+      : '',
   }
 
   let rendered = template

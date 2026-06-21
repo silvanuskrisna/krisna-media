@@ -119,7 +119,7 @@ export default function AdminTemplates() {
     }
   }, [])
 
-  const variables = ['{{nama}}', '{{tanggal}}', '{{paket}}', '{{jam_mulai}}', '{{jam_selesai}}', '{{lokasi}}', '{{total}}', '{{kode_booking}}', '{{no_wa}}', '{{rekening}}', '{{bank_nama}}', '{{bank_no}}', '{{bank_an}}', '{{dp}}', '{{sisa}}', '{{batas_waktu}}', '{{link_booking}}']
+  const variables = ['{{nama}}', '{{tanggal}}', '{{paket}}', '{{jam_mulai}}', '{{jam_selesai}}', '{{lokasi}}', '{{total}}', '{{kode_booking}}', '{{no_wa}}', '{{rekening}}', '{{bank_nama}}', '{{bank_no}}', '{{bank_an}}', '{{promo}}', '{{promo_info}}', '{{dp}}', '{{sisa}}', '{{batas_waktu}}', '{{link_booking}}']
 
   function insertVariable(v: string) {
     setForm(f => ({ ...f, content: f.content + v }))

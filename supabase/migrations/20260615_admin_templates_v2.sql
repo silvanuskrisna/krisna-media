@@ -13,6 +13,7 @@ Ini detail pesanan kamu:
 📅 Tanggal: {{tanggal}}
 ⏰ Jam: {{jam_mulai}} - {{jam_selesai}}
 🔊 Layanan: {{paket}}
+{{promo_info}}
 📍 Lokasi: {{lokasi}}
 
 Booking kamu sudah kami terima. Kami akan segera hubungi kamu untuk konfirmasi lebih lanjut ya!$$, 1),
