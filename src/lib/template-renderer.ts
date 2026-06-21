@@ -25,6 +25,8 @@ export interface RenderSettings {
  * {{bank_an}}       → atas nama saja
  * {{promo}}         → nama promo (jika booking pake promo)
  * {{promo_info}}    → info promo lengkap (jika booking pake promo)
+ * {{booking_context}} → otomatis deteksi: \"Rental Studio\" (studio) / \"Krisna Media\" (lainnya)
+ * {{booking_verb}}  → otomatis deteksi: \"sewa\" (studio) / \"pakai\" (lainnya)
  * {{dp}}            → (manual)
  * {{sisa}}          → (manual)
  * {{batas_waktu}}   → (manual)
@@ -64,6 +66,8 @@ export function renderTemplate(
     '{{promo_info}}': booking.promo_name
       ? `Promo: ${booking.promo_name}${booking.total_price ? ` — Rp ${booking.total_price.toLocaleString('id-ID')}` : ''}`
       : '',
+    '{{booking_verb}}': isStudioProduct(booking.product_name) ? 'sewa' : 'pakai',
+    '{{booking_context}}': isStudioProduct(booking.product_name) ? 'Rental Studio' : 'Krisna Media',
   }
 
   let rendered = template
@@ -93,9 +97,15 @@ function extractLocation(notes: string | null): string {
   for (const kw of keywords) {
     const idx = lower.indexOf(kw)
     if (idx >= 0) {
-      const snippet = notes.slice(idx, idx + 60).split(/[.\n]/)[0].trim()
+      const snippet = notes.slice(idx, idx + 60).split(/[.\\n]/)[0].trim()
       if (snippet.length > 3) return snippet
     }
   }
   return notes.slice(0, 50) || '(lokasi)'
+}
+
+/** Deteksi apakah booking ini untuk studio rental berdasarkan nama produk */
+function isStudioProduct(productName: string | null): boolean {
+  if (!productName) return false
+  return /rental\s*studio|studio\s*(rental)?/i.test(productName)
 }
