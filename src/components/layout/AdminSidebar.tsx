@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, Calendar, MessageSquare, Users, Settings, LogOut, Menu, X, Music, ImageIcon, Tag, GraduationCap, FileText, DollarSign } from 'lucide-react'
+import { LayoutDashboard, Package, Calendar, MessageSquare, Users, Settings, LogOut, Menu, X, Music, ImageIcon, Tag, GraduationCap, FileText, DollarSign, ClipboardList } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const navLinks = [
@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/admin/products', label: 'Produk', icon: Package },
   { href: '/admin/promos', label: 'Promo', icon: Tag },
   { href: '/admin/bookings', label: 'Pesanan', icon: Calendar },
+  { href: '/admin/templates', label: 'Template', icon: ClipboardList },
   // KMC Section
   { href: '/admin/kmc-members', label: 'KMC Member', icon: GraduationCap },
   { href: '/admin/kmc-enrollments', label: 'KMC Enroll', icon: FileText },

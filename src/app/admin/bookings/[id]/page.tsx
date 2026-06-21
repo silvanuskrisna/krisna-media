@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Calendar, Clock, User, Phone, Mail, MessageCircle, Check, X, ArrowLeft, Tag, FileText, ExternalLink } from 'lucide-react'
 import { formatDate, formatPrice, getWhatsAppUrl } from '@/lib/utils'
 import type { Booking } from '@/lib/types'
+import TemplatePicker from '@/components/admin/TemplatePicker'
 
 const statusBadge: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'bg-yellow-500/20 text-yellow-400' },
@@ -251,8 +252,11 @@ export default function AdminBookingDetail() {
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600/20 text-green-400 rounded-lg text-sm font-medium hover:bg-green-600/30 transition-colors"
           >
             <MessageCircle size={16} />
-            Hubungi via WhatsApp
+            Buka WA
           </a>
+
+          {/* Template Balasan */}
+          <TemplatePicker booking={booking} />
 
           {/* Minta Testimoni */}
           {booking.status === 'completed' && (

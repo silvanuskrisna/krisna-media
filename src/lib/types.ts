@@ -1,3 +1,14 @@
+export interface AdminTemplate {
+  id: string
+  name: string
+  category: string
+  content: string
+  sort_order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Product {
   id: string
   name: string
