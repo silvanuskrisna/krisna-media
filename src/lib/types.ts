@@ -2,6 +2,7 @@ export interface AdminTemplate {
   id: string
   name: string
   category: string
+  trigger_event: string | null
   content: string
   sort_order: number
   is_active: boolean

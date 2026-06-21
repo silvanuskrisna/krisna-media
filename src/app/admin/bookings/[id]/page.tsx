@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Calendar, Clock, User, Phone, Mail, MessageCircle, Check, X, ArrowLeft, Tag, FileText, ExternalLink } from 'lucide-react'
 import { formatDate, formatPrice, getWhatsAppUrl } from '@/lib/utils'
 import type { Booking } from '@/lib/types'
-import TemplatePicker from '@/components/admin/TemplatePicker'
+import TemplateActions from '@/components/admin/TemplateActions'
 
 const statusBadge: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'bg-yellow-500/20 text-yellow-400' },
@@ -243,69 +243,48 @@ export default function AdminBookingDetail() {
       {/* Actions */}
       <div className="glass rounded-xl p-6">
         <h2 className="text-sm font-semibold text-foreground mb-4">Aksi</h2>
-        <div className="flex flex-wrap gap-3">
-          {/* WhatsApp */}
-          <a
-            href={getWhatsAppUrl(booking.customer_phone)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600/20 text-green-400 rounded-lg text-sm font-medium hover:bg-green-600/30 transition-colors"
-          >
-            <MessageCircle size={16} />
-            Buka WA
-          </a>
+        <div className="space-y-4">
+          {/* Template Actions — auto sesuai status */}
+          <TemplateActions booking={booking} />
 
-          {/* Template Balasan */}
-          <TemplatePicker booking={booking} />
+          {/* Status update buttons */}
+          <div className="flex flex-wrap gap-3 pt-3 border-t border-border/50">
+            {/* Confirm */}
+            {booking.status === 'pending' && (
+              <button
+                onClick={() => setConfirmDialog({ action: 'confirmed', label: 'Konfirmasi' })}
+                disabled={actionLoading !== null}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600/20 text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-600/30 transition-colors disabled:opacity-50"
+              >
+                <Check size={16} />
+                Konfirmasi Pesanan
+              </button>
+            )}
 
-          {/* Minta Testimoni */}
-          {booking.status === 'completed' && (
-            <a
-              href={getWhatsAppUrl(booking.customer_phone, `Halo Kak ${booking.customer_name}! Terima kasih sudah menggunakan layanan ${booking.product_name || 'Krisna Media'} 🎉 Kami mohon bantuannya untuk memberikan testimoni ya, tinggal klik link ini: https://krisnamedia.id/testimonials Terima kasih banyak! 🙏`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600/20 text-purple-400 rounded-lg text-sm font-medium hover:bg-purple-600/30 transition-colors"
-            >
-              <MessageCircle size={16} />
-              💬 Minta Testimoni
-            </a>
-          )}
+            {/* Complete */}
+            {booking.status === 'confirmed' && (
+              <button
+                onClick={() => setConfirmDialog({ action: 'completed', label: 'Selesaikan' })}
+                disabled={actionLoading !== null}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600/20 text-green-400 rounded-lg text-sm font-medium hover:bg-green-600/30 transition-colors disabled:opacity-50"
+              >
+                <Check size={16} />
+                Tandai Selesai
+              </button>
+            )}
 
-          {/* Confirm */}
-          {booking.status === 'pending' && (
-            <button
-              onClick={() => setConfirmDialog({ action: 'confirmed', label: 'Konfirmasi' })}
-              disabled={actionLoading !== null}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600/20 text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-600/30 transition-colors disabled:opacity-50"
-            >
-              <Check size={16} />
-              Konfirmasi Pesanan
-            </button>
-          )}
-
-          {/* Complete */}
-          {booking.status === 'confirmed' && (
-            <button
-              onClick={() => setConfirmDialog({ action: 'completed', label: 'Selesaikan' })}
-              disabled={actionLoading !== null}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600/20 text-green-400 rounded-lg text-sm font-medium hover:bg-green-600/30 transition-colors disabled:opacity-50"
-            >
-              <Check size={16} />
-              Tandai Selesai
-            </button>
-          )}
-
-          {/* Cancel */}
-          {(booking.status === 'pending' || booking.status === 'confirmed') && (
-            <button
-              onClick={() => setConfirmDialog({ action: 'cancelled', label: 'Batalkan' })}
-              disabled={actionLoading !== null}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600/20 text-red-400 rounded-lg text-sm font-medium hover:bg-red-600/30 transition-colors disabled:opacity-50"
-            >
-              <X size={16} />
-              Batalkan Pesanan
-            </button>
-          )}
+            {/* Cancel */}
+            {(booking.status === 'pending' || booking.status === 'confirmed') && (
+              <button
+                onClick={() => setConfirmDialog({ action: 'cancelled', label: 'Batalkan' })}
+                disabled={actionLoading !== null}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600/20 text-red-400 rounded-lg text-sm font-medium hover:bg-red-600/30 transition-colors disabled:opacity-50"
+              >
+                <X size={16} />
+                Batalkan Pesanan
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

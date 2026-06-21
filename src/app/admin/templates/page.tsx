@@ -13,6 +13,15 @@ const categories = [
   { value: 'kmc', label: 'KMC' },
 ]
 
+const triggerEvents = [
+  { value: '', label: '— Manual (pilih dari Template Lainnya) —' },
+  { value: 'booking_confirm', label: '🔵 Konfirmasi Booking (muncul saat Pending)' },
+  { value: 'payment_reminder', label: '🟡 Reminder Bayar (muncul saat Confirmed)' },
+  { value: 'after_event', label: '🟣 After Event (muncul saat Confirmed/Completed)' },
+  { value: 'ask_testimonial', label: '🟢 Minta Testimoni (muncul saat Completed)' },
+  { value: 'cancellation', label: '🔴 Info Pembatalan (muncul saat Cancelled)' },
+]
+
 const categoryColors: Record<string, string> = {
   booking: 'bg-blue-500/20 text-blue-400',
   payment: 'bg-green-500/20 text-green-400',
@@ -25,7 +34,7 @@ export default function AdminTemplates() {
   const [templates, setTemplates] = useState<AdminTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [editDialog, setEditDialog] = useState<{ template?: AdminTemplate } | null>(null)
-  const [form, setForm] = useState({ name: '', category: 'general', content: '' })
+  const [form, setForm] = useState({ name: '', category: 'general', trigger_event: '', content: '' })
   const [saving, setSaving] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
@@ -42,12 +51,12 @@ export default function AdminTemplates() {
   }
 
   function openCreate() {
-    setForm({ name: '', category: 'general', content: '' })
+    setForm({ name: '', category: 'general', trigger_event: '', content: '' })
     setEditDialog({})
   }
 
   function openEdit(template: AdminTemplate) {
-    setForm({ name: template.name, category: template.category, content: template.content })
+    setForm({ name: template.name, category: template.category, trigger_event: template.trigger_event ?? '', content: template.content })
     setEditDialog({ template })
   }
 
@@ -58,12 +67,24 @@ export default function AdminTemplates() {
       if (editDialog?.template) {
         await supabase
           .from('admin_templates')
-          .update({ name: form.name, category: form.category, content: form.content, updated_at: new Date().toISOString() })
+          .update({
+            name: form.name,
+            category: form.category,
+            trigger_event: form.trigger_event || null,
+            content: form.content,
+            updated_at: new Date().toISOString(),
+          })
           .eq('id', editDialog.template.id)
       } else {
         await supabase
           .from('admin_templates')
-          .insert({ name: form.name, category: form.category, content: form.content, sort_order: templates.length })
+          .insert({
+            name: form.name,
+            category: form.category,
+            trigger_event: form.trigger_event || null,
+            content: form.content,
+            sort_order: templates.length,
+          })
       }
       setEditDialog(null)
       await fetchTemplates()
@@ -132,6 +153,7 @@ export default function AdminTemplates() {
         <div className="space-y-3">
           {templates.map((tpl) => {
             const catColor = categoryColors[tpl.category] || categoryColors.general
+            const triggerLabel = triggerEvents.find(t => t.value === tpl.trigger_event)?.label || ''
             return (
               <div key={tpl.id} className="glass rounded-xl p-4 border border-border hover-card">
                 <div className="flex items-start justify-between gap-4">
@@ -141,6 +163,11 @@ export default function AdminTemplates() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${catColor}`}>
                         {categories.find(c => c.value === tpl.category)?.label || tpl.category}
                       </span>
+                      {tpl.trigger_event && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium">
+                          Auto
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2 whitespace-pre-line font-mono text-xs">{tpl.content.slice(0, 200)}{tpl.content.length > 200 ? '...' : ''}</p>
                   </div>
@@ -209,6 +236,20 @@ export default function AdminTemplates() {
                     <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Auto-tampil saat</label>
+                <select
+                  value={form.trigger_event}
+                  onChange={e => setForm(f => ({ ...f, trigger_event: e.target.value }))}
+                  className="w-full bg-[#1a1a1a] border border-border rounded-lg px-4 py-2.5 text-sm text-foreground focus:outline-none focus:border-accent"
+                >
+                  {triggerEvents.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground mt-1">Kalo "Manual", template cuma muncul di "Template Lainnya"</p>
               </div>
 
               <div>

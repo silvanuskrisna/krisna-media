@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS admin_templates (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   category VARCHAR(50) NOT NULL DEFAULT 'general',
+  trigger_event VARCHAR(50),
   content TEXT NOT NULL,
   sort_order INT NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT true,
