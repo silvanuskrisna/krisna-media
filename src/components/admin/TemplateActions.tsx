@@ -177,7 +177,7 @@ export default function TemplateActions({ booking }: Props) {
               ) : (
                 <MessageCircle size={16} />
               )}
-              {labels[event] || tpl.name}
+              {labels[event] || tpl?.name}
             </button>
           )
         })}
