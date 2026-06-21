@@ -1,6 +1,12 @@
 import type { Booking } from '@/lib/types'
 import { formatPrice } from './utils'
 
+export interface RenderSettings {
+  bank_name?: string
+  bank_account?: string
+  bank_holder?: string
+}
+
 /**
  * Variabel yang didukung di template:
  * {{nama}}          → customer_name
@@ -12,9 +18,25 @@ import { formatPrice } from './utils'
  * {{total}}         → total_price (terformat)
  * {{kode_booking}}  → booking_code
  * {{no_wa}}         → customer_phone
- * {{status}}        → status booking (pending/confirmed/dll)
+ * {{status}}        → status booking
+ * {{rekening}}      → info bank dari pengaturan (ex: "BCA — 1234567890 — a.n. Krisna Media")
+ * {{bank_nama}}     → nama bank saja
+ * {{bank_no}}       → no rekening saja
+ * {{bank_an}}       → atas nama saja
+ * {{dp}}            → (manual)
+ * {{sisa}}          → (manual)
+ * {{batas_waktu}}   → (manual)
+ * {{link_booking}}  → https://krisnamedia.id/booking
  */
-export function renderTemplate(template: string, booking: Booking): string {
+export function renderTemplate(
+  template: string,
+  booking: Booking,
+  settings?: RenderSettings
+): string {
+  const bankLine = settings?.bank_name && settings?.bank_account && settings?.bank_holder
+    ? `${settings.bank_name} — ${settings.bank_account} — a.n. ${settings.bank_holder}`
+    : '(isi rekening di Pengaturan)'
+
   const variables: Record<string, string> = {
     '{{nama}}': booking.customer_name,
     '{{tanggal}}': booking.booking_date
@@ -32,6 +54,10 @@ export function renderTemplate(template: string, booking: Booking): string {
     '{{kode_booking}}': booking.booking_code || booking.id?.slice(0, 8) || '-',
     '{{no_wa}}': booking.customer_phone || '-',
     '{{status}}': booking.status || '-',
+    '{{rekening}}': bankLine,
+    '{{bank_nama}}': settings?.bank_name || '(bank)',
+    '{{bank_no}}': settings?.bank_account || '(no rekening)',
+    '{{bank_an}}': settings?.bank_holder || '(a.n.)',
   }
 
   let rendered = template
@@ -45,7 +71,7 @@ export function renderTemplate(template: string, booking: Booking): string {
     rendered = rendered.replaceAll('{{lokasi}}', lokasi)
   }
 
-  // {{dp}} dan {{sisa}} — ga ada di DB, fallback
+  // Manual fallback
   rendered = rendered.replaceAll('{{dp}}', '(isi nominal DP)')
   rendered = rendered.replaceAll('{{sisa}}', '(isi sisa pembayaran)')
   rendered = rendered.replaceAll('{{batas_waktu}}', '(isi batas waktu)')
@@ -56,13 +82,11 @@ export function renderTemplate(template: string, booking: Booking): string {
 
 function extractLocation(notes: string | null): string {
   if (!notes) return '(lokasi)'
-  // Coba cari kata kunci lokasi di notes
   const lower = notes.toLowerCase()
   const keywords = ['lokasi', 'alamat', 'tempat', 'di ', 'gedung']
   for (const kw of keywords) {
     const idx = lower.indexOf(kw)
     if (idx >= 0) {
-      // Ambil substring dari kata kunci sampai akhir kalimat
       const snippet = notes.slice(idx, idx + 60).split(/[.\n]/)[0].trim()
       if (snippet.length > 3) return snippet
     }

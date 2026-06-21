@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { AdminTemplate, Booking } from '@/lib/types'
-import { renderTemplate } from '@/lib/template-renderer'
+import { renderTemplate, type RenderSettings } from '@/lib/template-renderer'
 import { getWhatsAppUrl } from '@/lib/utils'
 import { MessageCircle, Loader2, Copy, Check, ChevronDown, ExternalLink } from 'lucide-react'
 
@@ -40,6 +40,7 @@ interface Props {
 
 export default function TemplateActions({ booking }: Props) {
   const [templates, setTemplates] = useState<AdminTemplate[]>([])
+  const [settings, setSettings] = useState<RenderSettings>({})
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
@@ -50,15 +51,31 @@ export default function TemplateActions({ booking }: Props) {
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState<string>('all')
 
-  useEffect(() => { fetchTemplates() }, [])
+  useEffect(() => { fetchAll() }, [])
 
-  async function fetchTemplates() {
-    const { data } = await supabase
+  async function fetchAll() {
+    // Fetch templates
+    const { data: tplData } = await supabase
       .from('admin_templates')
       .select('*')
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
-    if (data) setTemplates(data)
+    if (tplData) setTemplates(tplData)
+
+    // Fetch settings (bank info)
+    const { data: settingsData } = await supabase
+      .from('site_settings')
+      .select('*')
+    if (settingsData) {
+      const merged: RenderSettings = {}
+      for (const row of settingsData) {
+        if (row.key === 'bank_name') merged.bank_name = String(row.value?.bank_name ?? row.value ?? '')
+        if (row.key === 'bank_account') merged.bank_account = String(row.value?.bank_account ?? row.value ?? '')
+        if (row.key === 'bank_holder') merged.bank_holder = String(row.value?.bank_holder ?? row.value ?? '')
+      }
+      setSettings(merged)
+    }
+
     setLoading(false)
   }
 
@@ -69,7 +86,7 @@ export default function TemplateActions({ booking }: Props) {
 
   /** Buka WA langsung dengan template yang sudah di-render */
   function openWhatsApp(tpl: AdminTemplate) {
-    const message = renderTemplate(tpl.content, booking)
+    const message = renderTemplate(tpl.content, booking, settings)
     window.open(getWhatsAppUrl(booking.customer_phone, message), '_blank')
   }
 
@@ -92,7 +109,7 @@ export default function TemplateActions({ booking }: Props) {
 
   function handleSelect(tpl: AdminTemplate) {
     setSelected(tpl)
-    setRendered(renderTemplate(tpl.content, booking))
+    setRendered(renderTemplate(tpl.content, booking, settings))
     setCopied(false)
   }
 
