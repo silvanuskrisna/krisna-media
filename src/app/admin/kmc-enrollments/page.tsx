@@ -25,6 +25,7 @@ export default function AdminKMCEnrollments() {
   // Edit modal
   const [editEnrollment, setEditEnrollment] = useState<any | null>(null)
   const [editTuition, setEditTuition] = useState('')
+  const [editPrepaid, setEditPrepaid] = useState(1)
   const [editAdminNotes, setEditAdminNotes] = useState('')
   const [editStatus, setEditStatus] = useState('')
   const [editing, setEditing] = useState(false)
@@ -82,6 +83,45 @@ export default function AdminKMCEnrollments() {
         .eq('id', editEnrollment.id)
 
       if (error) throw error
+
+      // If activating with prepaid, create invoice
+      if (statusChanged && editStatus === 'active' && editTuition !== '' && editPrepaid > 1) {
+        const fee = parseFloat(editTuition) || 0
+        const totalAmount = fee * editPrepaid
+        const memberId = editEnrollment.student_detail?.member_id
+        const studentName = editEnrollment.student_detail?.name || 'Siswa'
+        const period = editEnrollment.start_date
+          ? new Date(editEnrollment.start_date + 'T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+          : 'Bulan Ini'
+
+        // Create invoice
+        const { data: invoice, error: invErr } = await supabase
+          .from('invoices')
+          .insert({
+            member_id: memberId,
+            period: period + ` (${editPrepaid} bln)`,
+            total: totalAmount,
+            status: 'pending',
+            due_date: null,
+          })
+          .select()
+          .single()
+
+        if (invErr) throw invErr
+
+        // Create invoice item
+        const { error: itemErr } = await supabase
+          .from('invoice_items')
+          .insert({
+            invoice_id: invoice.id,
+            enrollment_id: editEnrollment.id,
+            student_name: studentName,
+            instrument: editEnrollment.instrument,
+            amount: totalAmount,
+          })
+
+        if (itemErr) throw itemErr
+      }
 
       // Sync kmc_schedules when status changes
       if (statusChanged) {
@@ -337,6 +377,7 @@ export default function AdminKMCEnrollments() {
                       onClick={() => {
                         setEditEnrollment(enrollment)
                         setEditTuition(enrollment.tuition_fee?.toString() || '')
+                        setEditPrepaid(1)
                         setEditAdminNotes(enrollment.admin_notes || '')
                         setEditStatus(enrollment.status)
                       }}
@@ -391,6 +432,32 @@ export default function AdminKMCEnrollments() {
                   placeholder="Contoh: 400000"
                   min={0}
                 />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  Bayar untuk <span className="text-red-400">*</span>
+                </label>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={editPrepaid}
+                    onChange={(e) => setEditPrepaid(parseInt(e.target.value))}
+                    className="px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent"
+                  >
+                    {[1,2,3,4,5,6].map(n => (
+                      <option key={n} value={n}>{n} bulan</option>
+                    ))}
+                  </select>
+                  {editTuition && parseFloat(editTuition) > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      = Rp {(parseFloat(editTuition) * editPrepaid).toLocaleString('id-ID')}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {editPrepaid > 1
+                    ? `Invoice akan dibuat otomatis sebesar Rp ${(parseFloat(editTuition || '0') * editPrepaid).toLocaleString('id-ID')}`
+                    : 'Invoice dibuat manual per bulan (di menu Tagihan)'}
+                </p>
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">Catatan Admin</label>
