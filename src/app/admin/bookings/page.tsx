@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { Calendar, Check, X, MessageCircle, Search, ExternalLink } from 'lucide-react'
 import { formatDate, formatPrice, getWhatsAppUrl } from '@/lib/utils'
 import type { Booking } from '@/lib/types'
+import Link from 'next/link'
 
 const statusTabs = [
   { value: 'all', label: 'Semua' },
@@ -163,7 +164,13 @@ export default function AdminBookings() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-foreground truncate">{booking.customer_name}</span>
+                      <Link
+                        href={`/admin/bookings/${booking.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="font-medium text-foreground truncate hover:text-accent transition-colors"
+                      >
+                        {booking.customer_name}
+                      </Link>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${status.color}`}>
                         {status.label}
                       </span>
