@@ -283,6 +283,12 @@ export default function AdminKMCEnrollments() {
                         Rp {enrollment.tuition_fee.toLocaleString('id-ID')}/bln
                       </p>
                     )}
+                    {/* Start date */}
+                    {enrollment.start_date && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Mulai {formatDate(enrollment.start_date)}
+                      </p>
+                    )}
                     {/* Admin notes */}
                     {enrollment.admin_notes && (
                       <p className="text-xs text-muted-foreground mt-1 italic">

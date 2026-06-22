@@ -16,6 +16,18 @@ const INSTRUMENTS = [
 const DAYS = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat']
 const TIME_OPTIONS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00']
 
+function getMonthOptions(): { value: string; label: string }[] {
+  const options: { value: string; label: string }[] = []
+  const now = new Date()
+  for (let i = 1; i <= 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const label = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+    options.push({ value, label })
+  }
+  return options
+}
+
 interface FormRow {
   id: string
   name: string
@@ -49,6 +61,15 @@ export default function KMCRegistration() {
 
   // Student rows
   const [rows, setRows] = useState<FormRow[]>([newRow()])
+
+  // Start month
+  const now = new Date()
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  const [startMonth, setStartMonth] = useState(
+    `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`
+  )
+
+  const MONTH_OPTIONS = getMonthOptions()
 
   useEffect(() => {
     async function init() {
@@ -191,6 +212,7 @@ export default function KMCRegistration() {
             experience_level: null,
             status: 'pending',
             sessions_per_month: 4,
+            start_date: `${startMonth}-01`,
           })
           .select()
           .single()
@@ -238,6 +260,7 @@ export default function KMCRegistration() {
             <h2 className="text-2xl font-bold text-foreground mb-2">Pendaftaran Terkirim! 🎉</h2>
             <p className="text-muted-foreground mb-6">
               Data kamu sudah kami terima. Admin akan konfirmasi maksimal 1×24 jam.
+              Kursus akan dimulai <strong>bulan depan</strong> sesuai jadwal yang dipilih.
               Pantau status di menu <strong>Kursus Saya</strong>.
             </p>
             <div className="flex gap-3 justify-center">
@@ -319,6 +342,28 @@ export default function KMCRegistration() {
                   placeholder="Alamat rumah (opsional)"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Start Month */}
+          <div className="glass rounded-xl p-5 border border-border">
+            <h2 className="text-sm font-semibold text-foreground mb-3">Mulai Kursus</h2>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">
+                Pilih bulan mulai <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={startMonth}
+                onChange={e => setStartMonth(e.target.value)}
+                className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm focus:outline-none focus:border-accent transition-colors appearance-none"
+              >
+                {MONTH_OPTIONS.map(m => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Kursus dimulai awal bulan yang dipilih. Biaya dihitung per bulan.
+              </p>
             </div>
           </div>
 
