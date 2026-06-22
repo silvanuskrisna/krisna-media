@@ -236,6 +236,17 @@ export default function AdminKMCMembers() {
     }
   }
 
+  async function handleDeleteMember(memberId: string) {
+    if (!confirm('Yakin mau hapus member ini? Semua data siswa, enrollment, dan invoice juga akan terhapus.')) return
+    try {
+      const { error } = await supabase.from('members').delete().eq('id', memberId)
+      if (error) throw error
+      await fetchMembers()
+    } catch (err: any) {
+      alert('Gagal menghapus: ' + err.message)
+    }
+  }
+
   async function handleDeleteEnrollment(enrollmentId: string) {
     if (!confirm('Yakin mau hapus enrollment ini?')) return
     try {
@@ -384,6 +395,13 @@ export default function AdminKMCMembers() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteMember(member.id) }}
+                    className="p-1.5 hover:bg-red-500/10 rounded-lg text-muted-foreground hover:text-red-400 transition-colors"
+                    title="Hapus member"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                   <span className="text-xs text-muted-foreground">{formatDate(member.created_at)}</span>
                   {expandedMember === member.id ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
                 </div>
