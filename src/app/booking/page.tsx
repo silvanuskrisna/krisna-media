@@ -47,6 +47,7 @@ function BookingForm() {
   // Calculate if happy hour applies
   const selectedProduct = products.find((p) => p.id === selectedProductId)
   const isStudio = selectedProduct?.category === 'studio'
+  const isProduct = selectedProduct?.category === 'senar-gitar'
 
   const isHappyHourActive = (() => {
     if (!happyHour?.enabled || !bookingDate || !startTime || !isStudio) return false
@@ -272,8 +273,12 @@ function BookingForm() {
     setError(null)
 
     // Validasi
-    if (!customerName.trim() || !customerPhone.trim() || !selectedProductId || !bookingDate) {
+    if (!customerName.trim() || !customerPhone.trim() || !selectedProductId) {
       setError('Harap isi semua field yang wajib diisi.')
+      return
+    }
+    if (!isProduct && !bookingDate) {
+      setError('Harap pilih tanggal booking.')
       return
     }
     if (!paymentMethod) {
@@ -293,50 +298,52 @@ function BookingForm() {
 
     const productName = selectedProduct?.name ?? ''
 
-    // ───── CEK KONFLIK BOOKING ─────
-    const { data: existingBookings, error: conflictError } = await supabase
-      .from('bookings')
-      .select('id, start_time, end_time, customer_name, status')
-      .eq('product_id', selectedProductId)
-      .eq('booking_date', bookingDate)
-      .in('status', ['pending', 'confirmed'])
-      .order('start_time', { ascending: true })
+    // ───── CEK KONFLIK BOOKING (skip untuk produk) ─────
+    if (!isProduct) {
+      const { data: existingBookings, error: conflictError } = await supabase
+        .from('bookings')
+        .select('id, start_time, end_time, customer_name, status')
+        .eq('product_id', selectedProductId)
+        .eq('booking_date', bookingDate)
+        .in('status', ['pending', 'confirmed'])
+        .order('start_time', { ascending: true })
 
-    if (conflictError) {
-      setError('Gagal mengecek jadwal. Silakan coba lagi.')
-      setSubmitting(false)
-      return
-    }
-
-    // Check time overlap
-    if (existingBookings && existingBookings.length > 0) {
-      let conflict = false
-      let conflictDetail = ''
-
-      if (startTime && endTime) {
-        for (const booking of existingBookings) {
-          if (booking.start_time && booking.end_time) {
-            const newStart = startTime
-            const newEnd = endTime
-            const existStart = booking.start_time.slice(0, 5)
-            const existEnd = booking.end_time.slice(0, 5)
-            if (newStart < existEnd && newEnd > existStart) {
-              conflict = true
-              conflictDetail += `\n• ${booking.customer_name} (${existStart}-${existEnd}) — ${booking.status === 'confirmed' ? 'Dikonfirmasi' : 'Pending'}`
-            }
-          }
-        }
-      } else {
-        conflict = true
-        conflictDetail = ` (${existingBookings.length} booking lain pada tanggal ini)`
-      }
-
-      if (conflict) {
-        setError(
-          `⚠️ Jadwal sudah dibooking oleh orang lain di tanggal dan jam yang sama:${conflictDetail}\n\nSilakan pilih tanggal/jam lain.`
-        )
+      if (conflictError) {
+        setError('Gagal mengecek jadwal. Silakan coba lagi.')
         setSubmitting(false)
         return
+      }
+
+      // Check time overlap
+      if (existingBookings && existingBookings.length > 0) {
+        let conflict = false
+        let conflictDetail = ''
+
+        if (startTime && endTime) {
+          for (const booking of existingBookings) {
+            if (booking.start_time && booking.end_time) {
+              const newStart = startTime
+              const newEnd = endTime
+              const existStart = booking.start_time.slice(0, 5)
+              const existEnd = booking.end_time.slice(0, 5)
+              if (newStart < existEnd && newEnd > existStart) {
+                conflict = true
+                conflictDetail += `\n• ${booking.customer_name} (${existStart}-${existEnd}) — ${booking.status === 'confirmed' ? 'Dikonfirmasi' : 'Pending'}`
+              }
+            }
+          }
+        } else {
+          conflict = true
+          conflictDetail = ` (${existingBookings.length} booking lain pada tanggal ini)`
+        }
+
+        if (conflict) {
+          setError(
+            `⚠️ Jadwal sudah dibooking oleh orang lain di tanggal dan jam yang sama:${conflictDetail}\n\nSilakan pilih tanggal/jam lain.`
+          )
+          setSubmitting(false)
+          return
+        }
       }
     }
 
@@ -385,9 +392,9 @@ function BookingForm() {
       product_name: productName,
       booking_code: bookingCode,
       total_price: finalTotalPrice,
-      booking_date: bookingDate,
-      start_time: startTime || null,
-      end_time: endTime || null,
+      booking_date: isProduct ? new Date().toISOString().split('T')[0] : bookingDate,
+      start_time: isProduct ? null : (startTime || null),
+      end_time: isProduct ? null : (endTime || null),
       payment_method: paymentMethod,
       payment_proof: paymentProofUrl,
       notes: notes.trim() || null,
@@ -642,15 +649,15 @@ function BookingForm() {
                     className="block text-sm font-medium text-foreground mb-1.5"
                   >
                     <Mail size={14} className="inline mr-1.5 -mt-0.5" />
-                    Email <span className="text-muted-foreground text-xs">(opsional)</span>
+                    Email <span className="text-xs text-accent">(dari akunmu)</span>
                   </label>
                   <input
                     id="customerEmail"
                     type="email"
                     value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    readOnly
                     placeholder="contoh@email.com"
-                    className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200"
+                    className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white/70 placeholder:text-muted-foreground text-sm cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -746,7 +753,8 @@ function BookingForm() {
                   </div>
                 )}
 
-                {/* Tanggal */}
+                {/* Tanggal & Jadwal — hanya untuk sewa/jasa, bukan produk */}
+                {!isProduct && (<>
                 <div>
                   <label
                     htmlFor="bookingDate"
@@ -826,6 +834,7 @@ function BookingForm() {
                     </div>
                   </div>
                 )}
+                </>)}
 
                 {/* Catatan */}
                 <div>
@@ -847,7 +856,8 @@ function BookingForm() {
                 </div>
               </div>
 
-              {/* Add-Ons */}
+              {/* Add-Ons — hanya untuk studio */}
+              {isStudio && (
               <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up delay-100">
                 <AddOnSection
                   addonGears={addonGears}
@@ -864,6 +874,7 @@ function BookingForm() {
                   }}
                 />
               </div>
+              )}
 
               {/* Promo — dipindah ke atas (sebelum Data Pemesan) */}
 
