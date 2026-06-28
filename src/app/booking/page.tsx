@@ -649,7 +649,7 @@ function BookingForm() {
                     className="block text-sm font-medium text-foreground mb-1.5"
                   >
                     <Mail size={14} className="inline mr-1.5 -mt-0.5" />
-                    Email <span className="text-xs text-accent">(dari akunmu)</span>
+                    Email
                   </label>
                   <input
                     id="customerEmail"
