@@ -231,12 +231,6 @@ async function LandingPage() {
     getSiteSettings(),
   ])
 
-  const stats = [
-    { number: '50+', label: 'Proyek Selesai' },
-    { number: '30+', label: 'Klien Puas' },
-    { number: '5+', label: 'Tahun Berpengalaman' },
-  ]
-
   const whatsappUrl = getWhatsAppUrl(
     settings.whatsapp,
     'Halo Krisna Media! Saya tertarik dengan layanan Anda. Bisakah saya mendapatkan informasi lebih lanjut?'
@@ -302,21 +296,7 @@ async function LandingPage() {
                 </Link>
               </div>
 
-              {/* Mini stats inline */}
-              <div className="animate-fade-in delay-400 flex gap-8 pt-6 border-t border-border/60">
-                <div>
-                  <span className="text-xl font-bold text-accent">50+</span>
-                  <p className="text-xs text-muted-foreground mt-0.5">Proyek</p>
-                </div>
-                <div>
-                  <span className="text-xl font-bold text-accent">30+</span>
-                  <p className="text-xs text-muted-foreground mt-0.5">Klien</p>
-                </div>
-                <div>
-                  <span className="text-xl font-bold text-accent">5+</span>
-                  <p className="text-xs text-muted-foreground mt-0.5">Tahun</p>
-                </div>
-              </div>
+
             </div>
 
             {/* RIGHT COLUMN — Service Cards Stack */}
@@ -355,35 +335,7 @@ async function LandingPage() {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
-      {/* ===== STATS BAR ===== */}
-      <div className="section-divider mx-6 md:mx-12" />
 
-      <section className="py-12 md:py-20">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-12">
-            {stats.map((stat, i) => (
-              <div
-                key={stat.label}
-                className={cn(
-                  'flex flex-col items-center text-center animate-fade-in-up',
-                  i === 0 && 'delay-100',
-                  i === 1 && 'delay-200',
-                  i === 2 && 'delay-300'
-                )}
-              >
-                <span className="text-4xl md:text-5xl font-bold text-accent mb-2">
-                  {stat.number}
-                </span>
-                <span className="text-muted text-sm md:text-base font-medium">
-                  {stat.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="section-divider mx-6 md:mx-12" />
 
       <PromoBanner />
 
