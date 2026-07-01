@@ -787,7 +787,20 @@ function BookingForm() {
                       id="startTime"
                       type="time"
                       value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
+                      onChange={(e) => {
+                        setStartTime(e.target.value)
+                        // Auto-calculate end time based on product
+                        if (e.target.value && selectedProduct) {
+                          const match = selectedProduct.name.match(/(\d+)\s*[Jj]am/)
+                          if (match) {
+                            const hours = parseInt(match[1])
+                            const [h, m] = e.target.value.split(':').map(Number)
+                            const endH = h + hours
+                            const endStr = `${String(endH % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+                            setEndTime(endStr)
+                          }
+                        }
+                      }}
                       className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 [color-scheme:dark]"
                     />
                   </div>
