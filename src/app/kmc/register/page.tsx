@@ -19,7 +19,7 @@ const TIME_OPTIONS = ['12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:
 function getMonthOptions(): { value: string; label: string }[] {
   const options: { value: string; label: string }[] = []
   const now = new Date()
-  for (let i = 1; i <= 6; i++) {
+  for (let i = 0; i < 6; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
     const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     const label = d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
