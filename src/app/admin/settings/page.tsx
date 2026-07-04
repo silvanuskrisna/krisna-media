@@ -261,8 +261,8 @@ export default function AdminSettings() {
         </div>
       )}
 
-      {/* Settings Groups */}
-      <div className="space-y-6">
+      {/* Settings Groups — 2 kolom */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {fieldGroups.map((group) => (
           <div key={group.title} className="glass rounded-xl p-6">
             <h2 className="text-lg font-semibold text-foreground mb-1">{group.title}</h2>
