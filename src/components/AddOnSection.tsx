@@ -28,26 +28,6 @@ export function AddOnSection({
         Add-Ons (Opsional)
       </h3>
 
-      {/* Hour Add-ons */}
-      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Tambah Jam Sewa (Rp85.000/jam)
-        </label>
-        <div className="flex items-center gap-3">
-          <input
-            type="number"
-            min="0"
-            max="10"
-            value={hourAddons}
-            onChange={(e) => onHourAddonsChange(parseInt(e.target.value) || 0)}
-            className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <span className="text-sm text-gray-600">
-            {hourAddons > 0 && `+ ${formatPrice(hourAddons * 85000)}`}
-          </span>
-        </div>
-      </div>
-
       {/* Gear Add-ons */}
       {addonGears.length > 0 && (
         <div className="bg-green-50 rounded-lg p-4 border border-green-200">

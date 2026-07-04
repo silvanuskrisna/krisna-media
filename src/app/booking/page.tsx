@@ -175,13 +175,19 @@ function BookingForm() {
         bank_holder: (bankHolderR.data?.value as any)?.bank_holder ?? '',
       })
 
-      // Addon gears
-      const { data: gearData } = await supabase
-        .from('studio_addon_gears')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true })
-      if (gearData) setAddonGears(gearData)
+      // Addon gears — dari site_settings
+            const { data: gearSetting } = await supabase
+              .from('site_settings')
+              .select('value')
+              .eq('key', 'studio_addon_gears')
+              .single()
+            const rawGears = (gearSetting?.value as any)?.studio_addon_gears
+            if (Array.isArray(rawGears)) {
+              const activeGears = rawGears
+                .filter((g: any) => g.is_active)
+                .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+              setAddonGears(activeGears)
+            }
     }
 
     fetchData()
@@ -869,8 +875,8 @@ function BookingForm() {
                 </div>
               </div>
 
-              {/* Add-Ons — hanya untuk studio */}
-              {isStudio && (
+              {/* Add-Ons — hanya untuk studio, & hanya kalo ada gear aktif */}
+              {isStudio && addonGears.length > 0 && (
               <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up delay-100">
                 <AddOnSection
                   addonGears={addonGears}

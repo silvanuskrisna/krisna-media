@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Settings, Save, Loader2 } from 'lucide-react'
+import { Settings, Save, Loader2, Plus, Trash2, GripVertical } from 'lucide-react'
 import type { SiteSetting } from '@/lib/types'
+
+interface GearItem {
+  id: string
+  name: string
+  description: string
+  price: number
+  sort_order: number
+  is_active: boolean
+}
 
 interface SettingsData {
   site_name: string
@@ -93,6 +102,7 @@ const fieldGroups = [
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState<SettingsData>(defaultSettings)
+  const [gears, setGears] = useState<GearItem[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -114,12 +124,9 @@ export default function AdminSettings() {
         for (const row of data) {
           const key = row.key as keyof SettingsData
           if (key in defaultSettings && row.value) {
-            // row.value is a Record<string, any> — we extract the value
             if (typeof row.value === 'object' && row.value !== null) {
-              // If the value is already an object with key/value
               const val = row.value
               if (typeof val === 'object') {
-                // For backward compat: value could be the actual value directly
                 merged[key] = String(row.value[key] ?? row.value ?? '')
               } else {
                 merged[key] = String(val)
@@ -127,6 +134,11 @@ export default function AdminSettings() {
             } else {
               merged[key] = String(row.value ?? '')
             }
+          }
+
+          // Load gears from site_settings
+          if (row.key === 'studio_addon_gears' && Array.isArray(row.value?.studio_addon_gears)) {
+            setGears(row.value.studio_addon_gears)
           }
         }
         setSettings(merged)
@@ -149,11 +161,19 @@ export default function AdminSettings() {
         updated_at: new Date().toISOString(),
       }))
 
+      // Add gears as JSONB
+      upserts.push({
+        key: 'studio_addon_gears',
+        value: { studio_addon_gears: gears },
+        updated_at: new Date().toISOString(),
+      })
+
       // Delete all existing and re-insert
+      const allKeys = [...Object.keys(settings), 'studio_addon_gears']
       const { error: deleteError } = await supabase
         .from('site_settings')
         .delete()
-        .in('key', Object.keys(settings))
+        .in('key', allKeys)
 
       if (deleteError) throw deleteError
 
@@ -175,6 +195,34 @@ export default function AdminSettings() {
 
   function updateField(key: keyof SettingsData, value: string) {
     setSettings((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function addGear() {
+    const newGear: GearItem = {
+      id: crypto.randomUUID(),
+      name: '',
+      description: '',
+      price: 0,
+      sort_order: gears.length + 1,
+      is_active: true,
+    }
+    setGears([...gears, newGear])
+  }
+
+  function updateGear(id: string, field: keyof GearItem, value: string | number | boolean) {
+    setGears(gears.map(g => g.id === id ? { ...g, [field]: value } : g))
+  }
+
+  function removeGear(id: string) {
+    setGears(gears.filter(g => g.id !== id))
+  }
+
+  function moveGear(index: number, direction: -1 | 1) {
+    const newIndex = index + direction
+    if (newIndex < 0 || newIndex >= gears.length) return
+    const updated = [...gears]
+    ;[updated[index], updated[newIndex]] = [updated[newIndex], updated[index]]
+    setGears(updated.map((g, i) => ({ ...g, sort_order: i + 1 })))
   }
 
   if (loading) {
@@ -259,6 +307,121 @@ export default function AdminSettings() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* ───── STUDIO ADD-ON GEARS ───── */}
+      <div className="glass rounded-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Gear Tambahan Studio</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Add-on yang muncul saat booking Rental Studio
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={addGear}
+            className="flex items-center gap-1.5 px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-sm font-medium transition-all"
+          >
+            <Plus size={16} />
+            Tambah Gear
+          </button>
+        </div>
+
+        {gears.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            Belum ada gear tambahan. Klik &quot;Tambah Gear&quot; untuk mulai.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {gears.map((gear, index) => (
+              <div
+                key={gear.id}
+                className="bg-[#171717] border border-[#262626] rounded-lg p-4 space-y-3"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <GripVertical size={16} className="text-muted-foreground cursor-grab shrink-0" />
+                    <span className="text-xs text-muted-foreground font-mono">#{index + 1}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => moveGear(index, -1)}
+                      disabled={index === 0}
+                      className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveGear(index, 1)}
+                      disabled={index === gears.length - 1}
+                      className="p-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeGear(gear.id)}
+                      className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-all"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Nama Gear</label>
+                    <input
+                      type="text"
+                      value={gear.name}
+                      onChange={(e) => updateGear(gear.id, 'name', e.target.value)}
+                      placeholder="Contoh: Microphone Condenser"
+                      className="w-full px-3 py-2 bg-background border border-[#262626] rounded-lg text-white text-sm focus:outline-none focus:border-accent/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Harga (Rp)</label>
+                    <input
+                      type="number"
+                      value={gear.price || ''}
+                      onChange={(e) => updateGear(gear.id, 'price', parseInt(e.target.value) || 0)}
+                      placeholder="200000"
+                      className="w-full px-3 py-2 bg-background border border-[#262626] rounded-lg text-white text-sm focus:outline-none focus:border-accent/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">Aktif</label>
+                    <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={gear.is_active}
+                        onChange={(e) => updateGear(gear.id, 'is_active', e.target.checked)}
+                        className="accent-green-500"
+                      />
+                      <span className="text-sm text-foreground">
+                        {gear.is_active ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">Deskripsi (opsional)</label>
+                  <input
+                    type="text"
+                    value={gear.description}
+                    onChange={(e) => updateGear(gear.id, 'description', e.target.value)}
+                    placeholder="Contoh: Mic kondensor untuk rekaman vokal"
+                    className="w-full px-3 py-2 bg-background border border-[#262626] rounded-lg text-white text-sm focus:outline-none focus:border-accent/50"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Bottom save button */}
