@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServer } from '@/lib/supabase-server'
+import { supabaseService } from '@/lib/supabase-service'
 
 /**
  * POST /api/bookings/[bookingId]/addons
- * Save add-ons for a booking (hours + gears)
+ * Save add-ons for a booking (hours + gears) — uses service role to bypass RLS
  */
 export async function POST(
   request: NextRequest,
@@ -13,7 +13,6 @@ export async function POST(
     const { bookingId } = await params
     const body = await request.json()
     const { addons } = body
-    const supabase = await createSupabaseServer()
 
     if (!addons || !Array.isArray(addons)) {
       return NextResponse.json(
@@ -33,7 +32,7 @@ export async function POST(
       subtotal: addon.subtotal,
     }))
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseService
       .from('booking_addons')
       .insert(addonRecords)
       .select()
@@ -63,9 +62,8 @@ export async function GET(
 ) {
   try {
     const { bookingId } = await params
-    const supabase = await createSupabaseServer()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseService
       .from('booking_addons')
       .select('*')
       .eq('booking_id', bookingId)
