@@ -63,20 +63,31 @@ export default function TemplateActions({ booking }: Props) {
     if (tplData) setTemplates(tplData)
 
     // Fetch settings (bank info)
-    const { data: settingsData } = await supabase
-      .from('site_settings')
-      .select('*')
-    if (settingsData) {
-      const merged: RenderSettings = {}
-      for (const row of settingsData) {
-        if (row.key === 'bank_name') merged.bank_name = String(row.value?.bank_name ?? row.value ?? '')
-        if (row.key === 'bank_account') merged.bank_account = String(row.value?.bank_account ?? row.value ?? '')
-        if (row.key === 'bank_holder') merged.bank_holder = String(row.value?.bank_holder ?? row.value ?? '')
-      }
-      setSettings(merged)
-    }
+        const { data: settingsData } = await supabase
+          .from('site_settings')
+          .select('*')
+        if (settingsData) {
+          const merged: RenderSettings = {}
+          for (const row of settingsData) {
+            if (row.key === 'bank_name') merged.bank_name = String(row.value?.bank_name ?? row.value ?? '')
+            if (row.key === 'bank_account') merged.bank_account = String(row.value?.bank_account ?? row.value ?? '')
+            if (row.key === 'bank_holder') merged.bank_holder = String(row.value?.bank_holder ?? row.value ?? '')
+          }
+          setSettings(merged)
+        }
 
-    setLoading(false)
+        // Fetch add-ons for this booking
+        if (booking.id) {
+          const { data: addonData } = await supabase
+            .from('booking_addons')
+            .select('addon_name, unit_price')
+            .eq('booking_id', booking.id)
+          if (addonData && addonData.length > 0) {
+            setSettings(prev => ({ ...prev, addons: addonData }))
+          }
+        }
+
+        setLoading(false)
   }
 
   /** Dapatkan template yang cocok untuk trigger_event tertentu (ambil yang pertama) */

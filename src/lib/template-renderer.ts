@@ -1,10 +1,16 @@
 import type { Booking } from '@/lib/types'
 import { formatPrice } from './utils'
 
+export interface AddonInfo {
+  addon_name: string
+  unit_price: number
+}
+
 export interface RenderSettings {
   bank_name?: string
   bank_account?: string
   bank_holder?: string
+  addons?: AddonInfo[]
 }
 
 /**
@@ -14,19 +20,19 @@ export interface RenderSettings {
  * {{paket}}         → product_name
  * {{jam_mulai}}     → start_time
  * {{jam_selesai}}   → end_time
- * {{lokasi}}        → dari notes (jika ada)
  * {{total}}         → total_price (terformat)
  * {{kode_booking}}  → booking_code
  * {{no_wa}}         → customer_phone
  * {{status}}        → status booking
- * {{rekening}}      → info bank dari pengaturan (ex: "BCA — 1234567890 — a.n. Krisna Media")
+ * {{rekening}}      → info bank dari pengaturan
  * {{bank_nama}}     → nama bank saja
  * {{bank_no}}       → no rekening saja
  * {{bank_an}}       → atas nama saja
- * {{promo}}         → nama promo (jika booking pake promo)
- * {{promo_info}}    → info promo lengkap (jika booking pake promo)
- * {{booking_context}} → otomatis deteksi: \"Rental Studio\" (studio) / \"Krisna Media\" (lainnya)
- * {{booking_verb}}  → otomatis deteksi: \"sewa\" (studio) / \"pakai\" (lainnya)
+ * {{promo}}         → nama promo
+ * {{promo_info}}    → info promo lengkap
+ * {{booking_context}} → otomatis deteksi: "Rental Studio" / "Krisna Media"
+ * {{booking_verb}}  → otomatis deteksi: "sewa" / "pakai"
+ * {{addons_info}}   → daftar add-on (jika ada)
  * {{dp}}            → (manual)
  * {{sisa}}          → (manual)
  * {{batas_waktu}}   → (manual)
@@ -42,43 +48,40 @@ export function renderTemplate(
     : '(isi rekening di Pengaturan)'
 
   const variables: Record<string, string> = {
-    '{{nama}}': booking.customer_name,
-    '{{tanggal}}': booking.booking_date
-      ? new Date(booking.booking_date).toLocaleDateString('id-ID', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-      : '-',
-    '{{paket}}': booking.product_name || '-',
-    '{{jam_mulai}}': booking.start_time || '-',
-    '{{jam_selesai}}': booking.end_time || '-',
-    '{{total}}': booking.total_price ? formatPrice(booking.total_price) : '-',
-    '{{kode_booking}}': booking.booking_code || booking.id?.slice(0, 8) || '-',
-    '{{no_wa}}': booking.customer_phone || '-',
-    '{{status}}': booking.status || '-',
-    '{{rekening}}': bankLine,
-    '{{bank_nama}}': settings?.bank_name || '(bank)',
-    '{{bank_no}}': settings?.bank_account || '(no rekening)',
-    '{{bank_an}}': settings?.bank_holder || '(a.n.)',
-    '{{promo}}': booking.promo_name || '',
-    '{{promo_info}}': booking.promo_name
-      ? `Promo: ${booking.promo_name}${booking.total_price ? ` — Rp ${booking.total_price.toLocaleString('id-ID')}` : ''}`
-      : '',
-    '{{booking_verb}}': isStudioProduct(booking.product_name) ? 'sewa' : 'pakai',
-    '{{booking_context}}': isStudioProduct(booking.product_name) ? 'Rental Studio' : 'Krisna Media',
-  }
+      '{{nama}}': booking.customer_name,
+      '{{tanggal}}': booking.booking_date
+        ? new Date(booking.booking_date).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })
+        : '-',
+      '{{paket}}': booking.product_name || '-',
+      '{{jam_mulai}}': booking.start_time || '-',
+      '{{jam_selesai}}': booking.end_time || '-',
+      '{{total}}': booking.total_price ? formatPrice(booking.total_price) : '-',
+      '{{kode_booking}}': booking.booking_code || booking.id?.slice(0, 8) || '-',
+      '{{no_wa}}': booking.customer_phone || '-',
+      '{{status}}': booking.status || '-',
+      '{{rekening}}': bankLine,
+      '{{bank_nama}}': settings?.bank_name || '(bank)',
+      '{{bank_no}}': settings?.bank_account || '(no rekening)',
+      '{{bank_an}}': settings?.bank_holder || '(a.n.)',
+      '{{promo}}': booking.promo_name || '',
+      '{{promo_info}}': booking.promo_name
+        ? `Promo: ${booking.promo_name}${booking.total_price ? ` — Rp ${booking.total_price.toLocaleString('id-ID')}` : ''}`
+        : '',
+      '{{booking_verb}}': isStudioProduct(booking.product_name) ? 'sewa' : 'pakai',
+      '{{booking_context}}': isStudioProduct(booking.product_name) ? 'Rental Studio' : 'Krisna Media',
+      '{{addons_info}}': settings?.addons && settings.addons.length > 0
+        ? '\n🔧 Add-on:\n' + settings.addons.map(a => `  • ${a.addon_name} — ${formatPrice(a.unit_price)}`).join('\n')
+        : '',
+    }
 
   let rendered = template
   for (const [key, value] of Object.entries(variables)) {
     rendered = rendered.replaceAll(key, value)
-  }
-
-  // {{lokasi}} — ambil dari notes jika mengandung keyword lokasi
-  if (template.includes('{{lokasi}}')) {
-    const lokasi = extractLocation(booking.notes)
-    rendered = rendered.replaceAll('{{lokasi}}', lokasi)
   }
 
   // Manual fallback
