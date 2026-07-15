@@ -709,6 +709,13 @@ function BookingForm() {
                       ✅ Layanan otomatis: Rental Studio (Paket 2 Jam) — sesuai promo aktif 🎪
                     </p>
                   )}
+                  {selectedProduct?.description && !selectedPromoId && (
+                    <div className="mt-3 px-4 py-3 rounded-lg bg-accent/5 border border-accent/20">
+                      <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+                        {selectedProduct.description}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Harga — HH / Normal / Promo */}
