@@ -30,7 +30,7 @@ const categoryLabels: Record<string, string> = {
 const statusTriggers: Record<string, string[]> = {
   pending: ['booking_confirm', 'general'],
   confirmed: ['payment_reminder', 'after_event', 'general'],
-  completed: ['ask_testimonial', 'after_event', 'general'],
+  completed: ['ask_testimonial', 'general'],
   cancelled: ['cancellation', 'general'],
 }
 
