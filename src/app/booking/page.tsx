@@ -423,7 +423,7 @@ function BookingForm() {
 
     const bookingId = data?.id
 
-    // ───── SAVE ADD-ONS ─────
+    // ───── SAVE ADD-ONS VIA API (bypass RLS) ─────
     if (bookingId && (hourAddons > 0 || selectedGearIds.length > 0)) {
       try {
         const addonsToSave: any[] = []
@@ -431,7 +431,6 @@ function BookingForm() {
         // Hour add-ons
         if (hourAddons > 0) {
           addonsToSave.push({
-            booking_id: bookingId,
             addon_type: 'hour',
             addon_id: null,
             addon_name: `${hourAddons} Jam Tambahan`,
@@ -446,7 +445,6 @@ function BookingForm() {
           const gear = addonGears.find(g => g.id === gearId)
           if (gear) {
             addonsToSave.push({
-              booking_id: bookingId,
               addon_type: 'gear',
               addon_id: gearId,
               addon_name: gear.name,
@@ -458,12 +456,14 @@ function BookingForm() {
         })
 
         if (addonsToSave.length > 0) {
-          const { error: addonError } = await supabase
-            .from('booking_addons')
-            .insert(addonsToSave)
-
-          if (addonError) {
-            console.error('Warning: Failed to save add-ons:', addonError)
+          const res = await fetch(`/api/bookings/${bookingId}/addons`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ addons: addonsToSave }),
+          })
+          if (!res.ok) {
+            const errData = await res.json()
+            console.error('Warning: Failed to save add-ons:', errData)
             // Don't fail the entire booking, just log warning
           }
         }

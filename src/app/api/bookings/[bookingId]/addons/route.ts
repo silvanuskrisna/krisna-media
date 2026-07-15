@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createSupabaseServer } from '@/lib/supabase-server'
 
 /**
  * POST /api/bookings/[bookingId]/addons
@@ -13,6 +13,7 @@ export async function POST(
     const { bookingId } = await params
     const body = await request.json()
     const { addons } = body
+    const supabase = await createSupabaseServer()
 
     if (!addons || !Array.isArray(addons)) {
       return NextResponse.json(
@@ -62,6 +63,7 @@ export async function GET(
 ) {
   try {
     const { bookingId } = await params
+    const supabase = await createSupabaseServer()
 
     const { data, error } = await supabase
       .from('booking_addons')
