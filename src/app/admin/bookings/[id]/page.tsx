@@ -20,6 +20,7 @@ export default function AdminBookingDetail() {
   const params = useParams()
   const router = useRouter()
   const [booking, setBooking] = useState<Booking | null>(null)
+  const [addons, setAddons] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [confirmDialog, setConfirmDialog] = useState<{ action: string; label: string } | null>(null)
@@ -29,21 +30,28 @@ export default function AdminBookingDetail() {
   }, [])
 
   async function fetchBooking() {
-    try {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('id', params.id)
-        .single()
+      try {
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('id', params.id)
+          .single()
 
-      if (error) throw error
-      setBooking(data)
-    } catch (err) {
-      console.error('Failed to fetch booking:', err)
-    } finally {
-      setLoading(false)
+        if (error) throw error
+        setBooking(data)
+
+        // Fetch add-ons
+        const { data: addonData } = await supabase
+          .from('booking_addons')
+          .select('*')
+          .eq('booking_id', params.id)
+        if (addonData) setAddons(addonData)
+      } catch (err) {
+        console.error('Failed to fetch booking:', err)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
 
   async function handleStatusUpdate(status: Booking['status']) {
     if (!booking) return
@@ -189,6 +197,21 @@ export default function AdminBookingDetail() {
             </div>
           )}
         </div>
+
+        {/* Add-ons */}
+        {addons.length > 0 && (
+          <div className="mt-5 pt-5 border-t border-border/50">
+            <p className="text-xs text-muted-foreground mb-3">Add-On</p>
+            <div className="space-y-2">
+              {addons.map((addon) => (
+                <div key={addon.id} className="flex items-center justify-between text-sm">
+                  <span className="text-foreground">{addon.addon_name}</span>
+                  <span className="text-muted-foreground">{formatPrice(addon.unit_price)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Notes */}
         {booking.notes && (
