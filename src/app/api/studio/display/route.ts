@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server'
-import { getServiceClient } from '@/lib/supabase-service'
+import { createClient } from '@supabase/supabase-js'
 
 export async function GET() {
   try {
-    const supabase = getServiceClient()
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return NextResponse.json({ error: 'Missing Supabase config' }, { status: 500 })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
     
     const today = new Date()
     const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
@@ -45,7 +52,6 @@ export async function GET() {
       }
     }
 
-    // Calculate remaining seconds for countdown
     let remaining = 0
     if (active?.end_time) {
       const now = new Date()
