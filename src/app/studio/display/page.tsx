@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useEffect, useState } from 'react'
 
 interface ActiveBooking {
   id: string
@@ -13,27 +12,11 @@ interface ActiveBooking {
   total_price: number | null
 }
 
-function getCurrentTimeHHMM() {
-  const now = new Date()
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-}
-
-function getTodayDate() {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-}
-
-function parseHHMM(hhmm: string) {
-  const [h, m] = hhmm.split(':').map(Number)
-  return { h, m }
-}
-
-function remainingSeconds(endHM: string) {
-  const now = new Date()
-  const { h, m } = parseHHMM(endHM)
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0)
-  const diff = Math.floor((end.getTime() - now.getTime()) / 1000)
-  return Math.max(0, diff)
+interface DisplayData {
+  status: 'loading' | 'active' | 'waiting' | 'empty'
+  booking: ActiveBooking | null
+  nextBooking: ActiveBooking | null
+  remaining: number
 }
 
 function secondsToDisplay(sec: number) {
@@ -48,94 +31,48 @@ function formatPrice(price: number | null) {
   return 'Rp' + price.toLocaleString('id-ID')
 }
 
+function countdownToStart(startTime: string) {
+  const now = new Date()
+  const [h, m] = startTime.split(':').map(Number)
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0)
+  return Math.max(0, Math.floor((start.getTime() - now.getTime()) / 1000))
+}
+
 export default function StudioDisplay() {
-  const [booking, setBooking] = useState<ActiveBooking | null>(null)
-  const [remaining, setRemaining] = useState(0)
-  const [nextBooking, setNextBooking] = useState<ActiveBooking | null>(null)
-  const [status, setStatus] = useState<'loading' | 'active' | 'waiting' | 'empty'>('loading')
-  const [error, setError] = useState<string | null>(null)
+  const [data, setData] = useState<DisplayData>({
+    status: 'loading',
+    booking: null,
+    nextBooking: null,
+    remaining: 0
+  })
+  const [tick, setTick] = useState(0)
 
-  // Fetch active booking
-  const fetchBooking = useCallback(async () => {
-    try {
-      const today = getTodayDate()
-      const now = getCurrentTimeHHMM()
-
-      // Fetch all confirmed bookings for today
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('id, customer_name, product_name, start_time, end_time, booking_date, total_price')
-        .eq('booking_date', today)
-        .eq('status', 'confirmed')
-        .order('start_time', { ascending: true })
-
-      if (error) throw error
-      if (!data || data.length === 0) {
-        // No bookings today — show X-Studio logo/screen
-        setBooking(null)
-        setNextBooking(null)
-        setStatus('empty')
-        return
+  // Fetch from API every 30 seconds
+  useEffect(() => {
+    async function fetchDisplay() {
+      try {
+        const res = await fetch('/api/studio/display')
+        if (!res.ok) throw new Error('API error')
+        const json: DisplayData = await res.json()
+        setData(json)
+      } catch (err) {
+        console.error('Display fetch error:', err)
+        setData({ status: 'empty', booking: null, nextBooking: null, remaining: 0 })
       }
-
-      // Find active booking: start_time <= now < end_time
-      let active: ActiveBooking | null = null
-      let next: ActiveBooking | null = null
-
-      for (const b of data) {
-        if (!b.start_time || !b.end_time) continue
-        if (b.start_time <= now && now < b.end_time) {
-          active = b
-          break
-        }
-      }
-
-      // If no active booking, find the next upcoming one
-      if (!active) {
-        for (const b of data) {
-          if (!b.start_time) continue
-          if (b.start_time > now) {
-            next = b
-            break
-          }
-        }
-      }
-
-      setBooking(active)
-      setNextBooking(next)
-      setStatus(active ? 'active' : next ? 'waiting' : 'empty')
-    } catch (err) {
-      console.error('Display fetch error:', err)
-      setError('Gagal mengambil data booking')
     }
+
+    fetchDisplay()
+    const interval = setInterval(fetchDisplay, 30000)
+    return () => clearInterval(interval)
   }, [])
 
-  // Initial fetch + countdown logic
+  // Tick every second for countdown
   useEffect(() => {
-    fetchBooking()
+    const timer = setInterval(() => setTick(t => t + 1), 1000)
+    return () => clearInterval(timer)
+  }, [])
 
-    // Refresh booking list every 30 seconds
-    const interval = setInterval(fetchBooking, 30000)
-
-    // Countdown tick every second
-    const tick = setInterval(() => {
-      if (booking && booking.end_time) {
-        setRemaining(remainingSeconds(booking.end_time))
-      }
-    }, 1000)
-
-    return () => {
-      clearInterval(interval)
-      clearInterval(tick)
-    }
-  }, [fetchBooking, booking])
-
-  // Update remaining when booking changes
-  useEffect(() => {
-    if (booking && booking.end_time) {
-      setRemaining(remainingSeconds(booking.end_time))
-    }
-  }, [booking])
+  const { status, booking, nextBooking } = data
 
   // Loading state
   if (status === 'loading') {
@@ -146,7 +83,7 @@ export default function StudioDisplay() {
     )
   }
 
-  // Empty state — no bookings today
+  // Empty state
   if (status === 'empty') {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-black">
@@ -160,22 +97,18 @@ export default function StudioDisplay() {
 
   // Waiting — next booking
   if (status === 'waiting' && nextBooking) {
-    const startHM = nextBooking.start_time || '00:00'
-    const { h, m } = parseHHMM(startHM)
-    const now = new Date()
-    const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0)
-    const diffSec = Math.max(0, Math.floor((startDate.getTime() - now.getTime()) / 1000))
+    const diffSec = countdownToStart(nextBooking.start_time || '00:00')
     const countdown = secondsToDisplay(diffSec)
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white" key={tick}>
         <div className="text-2xl text-zinc-500 mb-4">— Booking Berikutnya —</div>
         <div className="text-8xl font-bold mb-8">{nextBooking.customer_name}</div>
         <div className="text-3xl text-zinc-400 mb-4">
           {nextBooking.product_name || 'Studio'}
         </div>
         <div className="text-2xl text-zinc-500 mb-8">
-          {startHM} — {nextBooking.end_time || '—'}
+          {nextBooking.start_time?.slice(0, 5)} — {nextBooking.end_time?.slice(0, 5)}
         </div>
         <div className="text-6xl font-mono text-amber-400">{countdown}</div>
         <div className="text-xl text-zinc-600 mt-2">sampai dimulai</div>
@@ -186,11 +119,12 @@ export default function StudioDisplay() {
   // Active booking
   if (!booking) return null
 
+  const remaining = tick > 0 ? Math.max(0, data.remaining - tick) : data.remaining
   const displayTime = secondsToDisplay(remaining)
   const isOvertime = remaining <= 0
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white" key={tick}>
       {/* Header */}
       <div className="text-2xl text-zinc-500 mb-3">— Sedang Berlangsung —</div>
 
