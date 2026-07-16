@@ -5,7 +5,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 
 let _client: SupabaseClient | null = null
 
-function getServiceClient(): SupabaseClient {
+export function getServiceClient(): SupabaseClient {
   if (!_client) {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     if (!supabaseServiceKey) {
