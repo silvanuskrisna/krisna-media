@@ -29,9 +29,9 @@ const categoryLabels: Record<string, string> = {
  */
 const statusTriggers: Record<string, string[]> = {
   pending: ['booking_confirm', 'general'],
-  confirmed: ['payment_reminder', 'after_event', 'general'],
-  completed: ['ask_testimonial', 'general'],
-  cancelled: ['cancellation', 'general'],
+    confirmed: ['payment_reminder', 'booking_rules', 'after_event', 'general'],
+    completed: ['ask_testimonial', 'general'],
+    cancelled: ['cancellation', 'general'],
 }
 
 interface Props {
@@ -157,22 +157,24 @@ export default function TemplateActions({ booking }: Props) {
           if (!tpl && !isGeneral) return null
 
           const labels: Record<string, string> = {
-            booking_confirm: 'Konfirmasi Booking 📩',
-            payment_reminder: 'Reminder Bayar 💰',
-            after_event: 'After Event 🙌',
-            ask_testimonial: 'Minta Testimoni ⭐',
-            cancellation: 'Info Pembatalan 📋',
-            general: 'Template Lainnya',
-          }
+                      booking_confirm: 'Konfirmasi Booking 📩',
+                      payment_reminder: 'Reminder Bayar 💰',
+                      booking_rules: 'Kirim Rules 📋',
+                      after_event: 'After Event 🙌',
+                      ask_testimonial: 'Minta Testimoni ⭐',
+                      cancellation: 'Info Pembatalan 📋',
+                      general: 'Template Lainnya',
+                    }
 
           const colors: Record<string, string> = {
-            booking_confirm: 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30',
-            payment_reminder: 'bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30',
-            after_event: 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30',
-            ask_testimonial: 'bg-green-600/20 text-green-400 hover:bg-green-600/30',
-            cancellation: 'bg-red-600/20 text-red-400 hover:bg-red-600/30',
-            general: 'bg-[#262626] text-foreground hover:bg-[#333]',
-          }
+                      booking_confirm: 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30',
+                      payment_reminder: 'bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600/30',
+                      booking_rules: 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30',
+                      after_event: 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30',
+                      ask_testimonial: 'bg-green-600/20 text-green-400 hover:bg-green-600/30',
+                      cancellation: 'bg-red-600/20 text-red-400 hover:bg-red-600/30',
+                      general: 'bg-[#262626] text-foreground hover:bg-[#333]',
+                    }
 
           return (
             <button

@@ -17,7 +17,8 @@ const triggerEvents = [
   { value: '', label: '— Manual (pilih dari Template Lainnya) —' },
   { value: 'booking_confirm', label: '🔵 Konfirmasi Booking (muncul saat Pending)' },
   { value: 'payment_reminder', label: '🟡 Reminder Bayar (muncul saat Confirmed)' },
-  { value: 'after_event', label: '🟣 After Event (muncul saat Confirmed/Completed)' },
+    { value: 'booking_rules', label: '📋 Kirim Rules (muncul saat Confirmed)' },
+    { value: 'after_event', label: '🟣 After Event (muncul saat Confirmed/Completed)' },
   { value: 'ask_testimonial', label: '🟢 Minta Testimoni (muncul saat Completed)' },
   { value: 'cancellation', label: '🔴 Info Pembatalan (muncul saat Cancelled)' },
 ]
