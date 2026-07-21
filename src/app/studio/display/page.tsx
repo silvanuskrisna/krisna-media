@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 interface ActiveBooking {
   id: string
@@ -46,6 +46,8 @@ export default function StudioDisplay() {
     remaining: 0
   })
   const [tick, setTick] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
+  const fetchRef = useRef<(() => void) | null>(null)
 
   // Fetch from API every 30 seconds
   useEffect(() => {
@@ -55,6 +57,7 @@ export default function StudioDisplay() {
         if (!res.ok) throw new Error('API error')
         const json: DisplayData = await res.json()
         setData(json)
+        setElapsed(0)  // Reset elapsed timer after fresh fetch
       } catch (err) {
         console.error('Display fetch error:', err)
         setData({ status: 'empty', booking: null, nextBooking: null, remaining: 0 })
@@ -62,15 +65,29 @@ export default function StudioDisplay() {
     }
 
     fetchDisplay()
+    fetchRef.current = fetchDisplay
     const interval = setInterval(fetchDisplay, 30000)
     return () => clearInterval(interval)
   }, [])
 
   // Tick every second for countdown
   useEffect(() => {
-    const timer = setInterval(() => setTick(t => t + 1), 1000)
+    const timer = setInterval(() => {
+      setTick(t => t + 1)
+      setElapsed(e => e + 1)
+    }, 1000)
     return () => clearInterval(timer)
   }, [])
+
+  // Auto-refresh when waiting countdown hits 0
+  useEffect(() => {
+    if (data.status === 'waiting' && data.nextBooking?.start_time) {
+      const diffSec = countdownToStart(data.nextBooking.start_time)
+      if (diffSec <= 0 && fetchRef.current) {
+        fetchRef.current()
+      }
+    }
+  }, [tick, data.status, data.nextBooking])
 
   const { status, booking, nextBooking } = data
 
@@ -119,7 +136,7 @@ export default function StudioDisplay() {
   // Active booking
   if (!booking) return null
 
-  const remaining = tick > 0 ? Math.max(0, data.remaining - tick) : data.remaining
+  const remaining = Math.max(0, data.remaining - elapsed)
   const displayTime = secondsToDisplay(remaining)
   const isOvertime = remaining <= 0
 
