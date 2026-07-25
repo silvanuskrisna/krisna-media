@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Globe, Camera, Video } from 'lucide-react'
 import { usePathname } from 'next/navigation'
