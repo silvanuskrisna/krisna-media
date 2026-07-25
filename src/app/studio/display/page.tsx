@@ -31,9 +31,9 @@ function formatPrice(price: number | null) {
   return 'Rp' + price.toLocaleString('id-ID')
 }
 
-function countdownToStart(startTime: string) {
+function secondsToStart(startTime: string) {
   const now = new Date()
-  const [h, m] = startTime.split(':').map(Number)
+  const [h, m] = (startTime || '00:00').split(':').map(Number)
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0)
   return Math.max(0, Math.floor((start.getTime() - now.getTime()) / 1000))
 }
@@ -45,49 +45,56 @@ export default function StudioDisplay() {
     nextBooking: null,
     remaining: 0
   })
-  const [tick, setTick] = useState(0)
   const [elapsed, setElapsed] = useState(0)
-  const fetchRef = useRef<(() => void) | null>(null)
+  const fetchRef = useRef<Promise<void> | null>(null)
 
-  // Fetch from API every 30 seconds
-  useEffect(() => {
-    async function fetchDisplay() {
+  // Fetch from API
+  const fetchDisplay = useRef(async () => {
+    // Prevent concurrent fetches
+    if (fetchRef.current) return
+    fetchRef.current = (async () => {
       try {
         const res = await fetch('/api/studio/display')
         if (!res.ok) throw new Error('API error')
         const json: DisplayData = await res.json()
         setData(json)
-        setElapsed(0)  // Reset elapsed timer after fresh fetch
+        setElapsed(0)
       } catch (err) {
         console.error('Display fetch error:', err)
-        setData({ status: 'empty', booking: null, nextBooking: null, remaining: 0 })
       }
-    }
+    })()
+    await fetchRef.current
+    fetchRef.current = null
+  }).current
 
+  // Initial fetch
+  useEffect(() => {
     fetchDisplay()
-    fetchRef.current = fetchDisplay
-    const interval = setInterval(fetchDisplay, 30000)
+    const interval = setInterval(fetchDisplay, 15000) // refresh API every 15s
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Tick every second for countdown
+  // Tick every second for countdown + transition check
   useEffect(() => {
     const timer = setInterval(() => {
-      setTick(t => t + 1)
       setElapsed(e => e + 1)
+
+      // Check if waiting countdown has reached 0 → refetch
+      setData(prev => {
+        if (prev.status === 'waiting' && prev.nextBooking?.start_time) {
+          const diffSec = secondsToStart(prev.nextBooking.start_time)
+          if (diffSec <= 0) {
+            // Trigger refetch outside setData to avoid side-effects in state updater
+            setTimeout(() => fetchDisplay(), 0)
+          }
+        }
+        return prev
+      })
     }, 1000)
     return () => clearInterval(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // Auto-refresh when waiting countdown hits 0
-  useEffect(() => {
-    if (data.status === 'waiting' && data.nextBooking?.start_time) {
-      const diffSec = countdownToStart(data.nextBooking.start_time)
-      if (diffSec <= 0 && fetchRef.current) {
-        fetchRef.current()
-      }
-    }
-  }, [tick, data.status, data.nextBooking])
 
   const { status, booking, nextBooking } = data
 
@@ -114,11 +121,11 @@ export default function StudioDisplay() {
 
   // Waiting — next booking
   if (status === 'waiting' && nextBooking) {
-    const diffSec = countdownToStart(nextBooking.start_time || '00:00')
+    const diffSec = secondsToStart(nextBooking.start_time || '00:00')
     const countdown = secondsToDisplay(diffSec)
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white" key={tick}>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
         <div className="text-2xl text-zinc-500 mb-4">— Booking Berikutnya —</div>
         <div className="text-8xl font-bold mb-8">{nextBooking.customer_name}</div>
         <div className="text-3xl text-zinc-400 mb-4">
@@ -127,8 +134,12 @@ export default function StudioDisplay() {
         <div className="text-2xl text-zinc-500 mb-8">
           {nextBooking.start_time?.slice(0, 5)} — {nextBooking.end_time?.slice(0, 5)}
         </div>
-        <div className="text-6xl font-mono text-amber-400">{countdown}</div>
-        <div className="text-xl text-zinc-600 mt-2">sampai dimulai</div>
+        <div className={`text-6xl font-mono ${diffSec <= 0 ? 'text-green-500 animate-pulse' : 'text-amber-400'}`}>
+          {diffSec <= 0 ? 'SEGARA MULAI...' : countdown}
+        </div>
+        <div className="text-xl text-zinc-600 mt-2">
+          {diffSec <= 0 ? 'Memuat sesi...' : 'sampai dimulai'}
+        </div>
       </div>
     )
   }
@@ -136,12 +147,13 @@ export default function StudioDisplay() {
   // Active booking
   if (!booking) return null
 
+  // Calculate remaining time: use API's remaining minus elapsed seconds
   const remaining = Math.max(0, data.remaining - elapsed)
   const displayTime = secondsToDisplay(remaining)
   const isOvertime = remaining <= 0
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white" key={tick}>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
       {/* Header */}
       <div className="text-2xl text-zinc-500 mb-3">— Sedang Berlangsung —</div>
 
