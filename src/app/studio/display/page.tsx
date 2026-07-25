@@ -70,7 +70,7 @@ export default function StudioDisplay() {
   // Initial fetch
   useEffect(() => {
     fetchDisplay()
-    const interval = setInterval(fetchDisplay, 15000) // refresh API every 15s
+    const interval = setInterval(fetchDisplay, 15000)
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -80,21 +80,27 @@ export default function StudioDisplay() {
     const timer = setInterval(() => {
       setElapsed(e => e + 1)
 
-      // Check if waiting countdown has reached 0 → refetch
-      setData(prev => {
-        if (prev.status === 'waiting' && prev.nextBooking?.start_time) {
-          const diffSec = secondsToStart(prev.nextBooking.start_time)
-          if (diffSec <= 0) {
-            // Trigger refetch outside setData to avoid side-effects in state updater
-            setTimeout(() => fetchDisplay(), 0)
-          }
+      // If waiting, check if we need to transition to active
+      if (data.status === 'waiting' && data.nextBooking?.start_time) {
+        const diffSec = secondsToStart(data.nextBooking.start_time)
+        if (diffSec <= 0) {
+          fetchDisplay()
         }
-        return prev
-      })
+      }
+
+      // If active, check if we need to transition to next booking
+      if (data.status === 'active' && data.booking) {
+        const now = new Date()
+        const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+        const nowHHMM = `${String(wita.getUTCHours()).padStart(2, '0')}:${String(wita.getUTCMinutes()).padStart(2, '0')}`
+        if (data.booking.end_time && nowHHMM >= data.booking.end_time) {
+          fetchDisplay()
+        }
+      }
     }, 1000)
     return () => clearInterval(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [data.status, data.nextBooking, data.booking])
 
   const { status, booking, nextBooking } = data
 

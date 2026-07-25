@@ -12,9 +12,11 @@ export async function GET() {
 
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
     
-    const today = new Date()
-    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-    const nowHHMM = `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`
+    const now = new Date()
+    // WITA (UTC+8) — Banjarmasin timezone
+    const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+    const dateStr = `${wita.getUTCFullYear()}-${String(wita.getUTCMonth() + 1).padStart(2, '0')}-${String(wita.getUTCDate()).padStart(2, '0')}`
+    const nowHHMM = `${String(wita.getUTCHours()).padStart(2, '0')}:${String(wita.getUTCMinutes()).padStart(2, '0')}`
 
     const { data, error } = await supabase
       .from('bookings')
