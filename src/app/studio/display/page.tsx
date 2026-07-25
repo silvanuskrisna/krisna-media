@@ -120,7 +120,7 @@ export default function StudioDisplay() {
       <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-black">
         <div className="text-center">
           <div className="text-6xl font-bold text-zinc-800 mb-2">X-STUDIO</div>
-          <div className="text-2xl text-zinc-700">Tidak ada jadwal hari ini</div>
+          <div className="text-2xl text-zinc-700">Belum ada booking hari ini</div>
         </div>
       </div>
     )
