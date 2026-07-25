@@ -33,9 +33,10 @@ function formatPrice(price: number | null) {
 
 function secondsToStart(startTime: string) {
   const now = new Date()
+  const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
   const [h, m] = (startTime || '00:00').split(':').map(Number)
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0)
-  return Math.max(0, Math.floor((start.getTime() - now.getTime()) / 1000))
+  const startWITA = new Date(Date.UTC(wita.getUTCFullYear(), wita.getUTCMonth(), wita.getUTCDate(), h, m, 0))
+  return Math.max(0, Math.floor((startWITA.getTime() - wita.getTime()) / 1000))
 }
 
 export default function StudioDisplay() {

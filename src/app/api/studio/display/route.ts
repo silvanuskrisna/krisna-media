@@ -56,10 +56,9 @@ export async function GET() {
 
     let remaining = 0
     if (active?.end_time) {
-      const now = new Date()
       const [h, m] = active.end_time.split(':').map(Number)
-      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0)
-      remaining = Math.max(0, Math.floor((end.getTime() - now.getTime()) / 1000))
+      const endWITA = new Date(Date.UTC(wita.getUTCFullYear(), wita.getUTCMonth(), wita.getUTCDate(), h, m, 0))
+      remaining = Math.max(0, Math.floor((endWITA.getTime() - wita.getTime()) / 1000))
     }
 
     return NextResponse.json({
