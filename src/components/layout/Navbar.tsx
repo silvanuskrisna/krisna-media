@@ -29,6 +29,7 @@ export default function Navbar() {
   const [loggingOut, setLoggingOut] = useState(false)
   const [kmcOpen, setKmcOpen] = useState(false)
   const isAdmin = pathname.startsWith('/admin')
+  const isStudio = pathname.startsWith('/studio')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -54,7 +55,7 @@ export default function Navbar() {
     router.refresh()
   }
 
-  if (isAdmin) return null
+  if (isAdmin || isStudio) return null
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 md:px-12 py-4 transition-all duration-300">

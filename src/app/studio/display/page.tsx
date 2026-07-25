@@ -108,7 +108,7 @@ export default function StudioDisplay() {
   // Loading state
   if (status === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center fixed inset-0 z-50 bg-black">
         <div className="text-zinc-600 text-4xl font-light animate-pulse">Memuat...</div>
       </div>
     )
@@ -117,7 +117,7 @@ export default function StudioDisplay() {
   // Empty state
   if (status === 'empty') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black">
+      <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-black">
         <div className="text-center">
           <div className="text-6xl font-bold text-zinc-800 mb-2">X-STUDIO</div>
           <div className="text-2xl text-zinc-700">Tidak ada jadwal hari ini</div>
@@ -132,7 +132,7 @@ export default function StudioDisplay() {
     const countdown = secondsToDisplay(diffSec)
 
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+      <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-black text-white">
         <div className="text-2xl text-zinc-500 mb-4">— Booking Berikutnya —</div>
         <div className="text-8xl font-bold mb-8">{nextBooking.customer_name}</div>
         <div className="text-3xl text-zinc-400 mb-4">
@@ -160,7 +160,7 @@ export default function StudioDisplay() {
   const isOvertime = remaining <= 0
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white">
+    <div className="flex flex-col items-center justify-center fixed inset-0 z-50 bg-black text-white">
       {/* Header */}
       <div className="text-2xl text-zinc-500 mb-3">— Sedang Berlangsung —</div>
 

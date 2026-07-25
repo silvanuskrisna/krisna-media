@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Phone, Mail, MapPin, Globe, Camera, Video } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 
 const socialLinks = [
   { label: 'Instagram', icon: Camera, href: '#' },
@@ -8,6 +9,8 @@ const socialLinks = [
 ]
 
 export default function Footer() {
+  const pathname = usePathname()
+  if (pathname.startsWith('/studio')) return null
   return (
     <footer className="border-t border-[#262626] bg-[#0a0a0a]">
       <div className="max-w-6xl mx-auto px-5 md:px-12 py-12 md:py-16">
