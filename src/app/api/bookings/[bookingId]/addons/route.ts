@@ -34,9 +34,9 @@ export async function POST(
             addon_id: null,
             addon_name: addon.addon_name || addon.nama || addon.name || '(no name)',
             quantity: addon.quantity || 1,
-        unit_price: addon.unit_price || addon.harga || addon.price || 0,
-        subtotal: addon.subtotal || (addon.quantity || 1) * (addon.unit_price || addon.harga || addon.price || 0),
-      }
+            unit_price: addon.unit_price || addon.harga || addon.price || 0,
+            subtotal: addon.subtotal || (addon.quantity || 1) * (addon.unit_price || addon.harga || addon.price || 0),
+          }
 
       // Auto-detect addon_type if not provided
       if (!record.addon_type) {
