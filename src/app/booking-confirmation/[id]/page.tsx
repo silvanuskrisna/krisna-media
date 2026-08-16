@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CheckCircle, Calendar, Clock, User, Phone, Mail, MessageCircle, Home, Tag, Wallet, Banknote } from 'lucide-react'
 import { cn, formatDate, formatPrice, getWhatsAppUrl } from '@/lib/utils'
-import type { Booking } from '@/lib/types'
+import type { Booking, BookingAddon } from '@/lib/types'
 
 async function getBookingById(id: string): Promise<Booking | null> {
   const sb = await createSupabaseServer()
@@ -16,6 +16,16 @@ async function getBookingById(id: string): Promise<Booking | null> {
   return data
 }
 
+async function getBookingAddons(id: string): Promise<BookingAddon[]> {
+  const sb = await createSupabaseServer()
+  const { data } = await sb
+    .from('booking_addons')
+    .select('*')
+    .eq('booking_id', id)
+
+  return data || []
+}
+
 export const dynamic = 'force-dynamic'
 
 export default async function BookingConfirmationPage({
@@ -25,6 +35,7 @@ export default async function BookingConfirmationPage({
 }) {
   const { id } = await params
   const booking = await getBookingById(id)
+  const addons = await getBookingAddons(id)
 
   if (!booking) {
     notFound()
@@ -199,6 +210,28 @@ export default async function BookingConfirmationPage({
                     <p className="text-foreground font-bold">
                       {formatPrice(booking.total_price)}
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Add-Ons */}
+              {addons.length > 0 && (
+                <div className="sm:col-span-2 flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center text-accent shrink-0 mt-0.5">
+                    <Tag size={16} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+                      Add-Ons
+                    </p>
+                    <div className="space-y-1.5">
+                      {addons.map((addon) => (
+                        <div key={addon.id} className="flex items-center justify-between text-sm">
+                          <span className="text-foreground">{addon.addon_name}{addon.quantity > 1 ? ` (×${addon.quantity})` : ''}</span>
+                          <span className="text-muted-foreground">+{formatPrice(addon.subtotal)}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
