@@ -54,10 +54,10 @@ function calcRemaining(booking: ActiveBooking): number {
 function secondsToStart(startTime: string) {
   const now = new Date()
   const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-  const startMin = toMinutes(startTime)
-  const nowMin = wita.getUTCHours() * 60 + wita.getUTCMinutes()
-  if (nowMin >= startMin) return 0
-  return (startMin - nowMin) * 60
+  const startSec = toMinutes(startTime) * 60
+  const nowSec = wita.getUTCHours() * 3600 + wita.getUTCMinutes() * 60 + wita.getUTCSeconds()
+  if (nowSec >= startSec) return 0
+  return startSec - nowSec
 }
 
 export default function StudioDisplay() {
