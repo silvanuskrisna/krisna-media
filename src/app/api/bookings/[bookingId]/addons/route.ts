@@ -23,8 +23,7 @@ export async function POST(
     }
 
     // Map client field names → database field names.
-    // Supports both English (addon_type, addon_name, unit_price, subtotal)
-    // and Indonesian (nama, harga, tipe, subtotal) naming.
+    // Supports both English and Indonesian naming formats.
     const addonRecords = addons.map((addon: any) => {
       const record: any = {
         booking_id: bookingId,
@@ -70,8 +69,8 @@ export async function POST(
  */
 export async function GET(
   request: NextRequest,
-    { params }: { params: Promise<{ bookingId: string }> }
-  ) {
+  { params }: { params: Promise<{ bookingId: string }> }
+) {
   try {
     const { bookingId } = await params
 
