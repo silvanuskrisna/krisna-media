@@ -31,12 +31,20 @@ function formatPrice(price: number | null) {
   return 'Rp' + price.toLocaleString('id-ID')
 }
 
+/** Convert "HH:MM" to minutes since midnight */
+function toMinutes(t: string) {
+  const [h, m] = (t || '00:00').split(':').map(Number)
+  return h * 60 + m
+}
+
 function secondsToStart(startTime: string) {
   const now = new Date()
   const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-  const [h, m] = (startTime || '00:00').split(':').map(Number)
-  const startWITA = new Date(Date.UTC(wita.getUTCFullYear(), wita.getUTCMonth(), wita.getUTCDate(), h, m, 0))
-  return Math.max(0, Math.floor((startWITA.getTime() - wita.getTime()) / 1000))
+  const startMin = toMinutes(startTime)
+  const nowMin = wita.getUTCHours() * 60 + wita.getUTCMinutes()
+  // If start is in the past, it might be 0 (already started) or negative — clamp to 0
+  if (nowMin >= startMin) return 0
+  return (startMin - nowMin) * 60
 }
 
 export default function StudioDisplay() {
@@ -89,12 +97,19 @@ export default function StudioDisplay() {
         }
       }
 
-      // If active, check if we need to transition to next booking
-      if (data.status === 'active' && data.booking) {
+      // If active, check if we need to transition
+      if (data.status === 'active' && data.booking?.end_time) {
         const now = new Date()
         const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-        const nowHHMM = `${String(wita.getUTCHours()).padStart(2, '0')}:${String(wita.getUTCMinutes()).padStart(2, '0')}`
-        if (data.booking.end_time && nowHHMM >= data.booking.end_time) {
+        const nowMin = wita.getUTCHours() * 60 + wita.getUTCMinutes()
+        const endMin = toMinutes(data.booking.end_time)
+        const startMin = toMinutes(data.booking.start_time)
+
+        // Check if session is truly over (handle midnight wrap)
+        if (endMin <= startMin) {
+          // Session wraps to next day (e.g. 21:00 - 00:00)
+          // The session ends when the date changes — the 15s refetch handles this
+        } else if (nowMin >= endMin) {
           fetchDisplay()
         }
       }
