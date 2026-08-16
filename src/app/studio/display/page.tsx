@@ -37,12 +37,25 @@ function toMinutes(t: string) {
   return h * 60 + m
 }
 
+/** Calculate remaining seconds for active booking (handles midnight wrap) */
+function calcRemaining(booking: ActiveBooking): number {
+  const now = new Date()
+  const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
+  const nowMin = wita.getUTCHours() * 60 + wita.getUTCMinutes()
+  const startMin = toMinutes(booking.start_time || '00:00')
+  const endMin = toMinutes(booking.end_time || '00:00')
+  let endAdj = endMin
+  if (endAdj <= startMin) endAdj += 1440 // next day
+  let nowAdj = nowMin
+  if (nowAdj < startMin) nowAdj += 1440
+  return Math.max(0, (endAdj - nowAdj) * 60)
+}
+
 function secondsToStart(startTime: string) {
   const now = new Date()
   const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
   const startMin = toMinutes(startTime)
   const nowMin = wita.getUTCHours() * 60 + wita.getUTCMinutes()
-  // If start is in the past, it might be 0 (already started) or negative — clamp to 0
   if (nowMin >= startMin) return 0
   return (startMin - nowMin) * 60
 }
@@ -54,12 +67,10 @@ export default function StudioDisplay() {
     nextBooking: null,
     remaining: 0
   })
-  const [elapsed, setElapsed] = useState(0)
   const fetchRef = useRef<Promise<void> | null>(null)
 
   // Fetch from API
   const fetchDisplay = useRef(async () => {
-    // Prevent concurrent fetches
     if (fetchRef.current) return
     fetchRef.current = (async () => {
       try {
@@ -67,7 +78,6 @@ export default function StudioDisplay() {
         if (!res.ok) throw new Error('API error')
         const json: DisplayData = await res.json()
         setData(json)
-        setElapsed(0)
       } catch (err) {
         console.error('Display fetch error:', err)
       }
@@ -84,10 +94,11 @@ export default function StudioDisplay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Tick every second for countdown + transition check
+  // Tick every second to re-render countdown
+  const [, setTick] = useState(0)
   useEffect(() => {
     const timer = setInterval(() => {
-      setElapsed(e => e + 1)
+      setTick(t => t + 1)
 
       // If waiting, check if we need to transition to active
       if (data.status === 'waiting' && data.nextBooking?.start_time) {
@@ -105,10 +116,8 @@ export default function StudioDisplay() {
         const endMin = toMinutes(data.booking.end_time)
         const startMin = toMinutes(data.booking.start_time)
 
-        // Check if session is truly over (handle midnight wrap)
         if (endMin <= startMin) {
-          // Session wraps to next day (e.g. 21:00 - 00:00)
-          // The session ends when the date changes — the 15s refetch handles this
+          // Midnight wrap (e.g. 21:00 - 00:00) — 15s refetch handles transition
         } else if (nowMin >= endMin) {
           fetchDisplay()
         }
@@ -169,8 +178,8 @@ export default function StudioDisplay() {
   // Active booking
   if (!booking) return null
 
-  // Calculate remaining time: use API's remaining minus elapsed seconds
-  const remaining = Math.max(0, data.remaining - elapsed)
+  // Calculate remaining directly from booking times (smooth, no jumps)
+  const remaining = calcRemaining(booking)
   const displayTime = secondsToDisplay(remaining)
   const isOvertime = remaining <= 0
 
