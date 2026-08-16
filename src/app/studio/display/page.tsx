@@ -41,14 +41,14 @@ function toMinutes(t: string) {
 function calcRemaining(booking: ActiveBooking): number {
   const now = new Date()
   const wita = new Date(now.getTime() + 8 * 60 * 60 * 1000)
-  const nowMin = wita.getUTCHours() * 60 + wita.getUTCMinutes()
-  const startMin = toMinutes(booking.start_time || '00:00')
-  const endMin = toMinutes(booking.end_time || '00:00')
-  let endAdj = endMin
-  if (endAdj <= startMin) endAdj += 1440 // next day
-  let nowAdj = nowMin
-  if (nowAdj < startMin) nowAdj += 1440
-  return Math.max(0, (endAdj - nowAdj) * 60)
+  const nowSec = wita.getUTCHours() * 3600 + wita.getUTCMinutes() * 60 + wita.getUTCSeconds()
+  const startSec = toMinutes(booking.start_time || '00:00') * 60
+  const endSec = toMinutes(booking.end_time || '00:00') * 60
+  let endAdj = endSec
+  if (endAdj <= startSec) endAdj += 86400 // next day in seconds
+  let nowAdj = nowSec
+  if (nowAdj < startSec) nowAdj += 86400
+  return Math.max(0, endAdj - nowAdj)
 }
 
 function secondsToStart(startTime: string) {
