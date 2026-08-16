@@ -25,12 +25,15 @@ export async function POST(
     // Map client field names → database field names.
     // Supports both English and Indonesian naming formats.
     const addonRecords = addons.map((addon: any) => {
-      const record: any = {
-        booking_id: bookingId,
-        addon_type: addon.addon_type || addon.tipe || null,
-        addon_id: addon.addon_id || addon.gear_id || addon.id || null,
-        addon_name: addon.addon_name || addon.nama || addon.name || '(no name)',
-        quantity: addon.quantity || 1,
+          const record: any = {
+            booking_id: bookingId,
+            addon_type: addon.addon_type || addon.tipe || null,
+            // addon_id omitted — the FK references a UUID table,
+            // but gear IDs from site_settings are strings (e.g. "dw-drums").
+            // addon_name already captures the display name.
+            addon_id: null,
+            addon_name: addon.addon_name || addon.nama || addon.name || '(no name)',
+            quantity: addon.quantity || 1,
         unit_price: addon.unit_price || addon.harga || addon.price || 0,
         subtotal: addon.subtotal || (addon.quantity || 1) * (addon.unit_price || addon.harga || addon.price || 0),
       }
