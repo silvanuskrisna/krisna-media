@@ -73,6 +73,7 @@ export default function StudioDisplay() {
   const [thanksName, setThanksName] = useState('')
   const thanksStartRef = useRef<number | null>(null)
   const lastActiveRef = useRef<ActiveBooking | null>(null)
+  const lastThankedId = useRef<string | null>(null)
   const fetchRef = useRef<Promise<void> | null>(null)
 
   // Fetch from API
@@ -100,7 +101,7 @@ export default function StudioDisplay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Tick every second: countdown render + transitions + thanks phase logic
+  // Tick every second: countdown render + transitions + thanks logic
   const [, setTick] = useState(0)
   useEffect(() => {
     const timer = setInterval(() => {
@@ -113,6 +114,8 @@ export default function StudioDisplay() {
 
         // Auto-end after 3 minutes
         if (start && now - start >= THANKS_DURATION_MS) {
+          // Lock this booking as thanked so we don't re-enter
+          lastThankedId.current = lastActiveRef.current?.id || 'skip'
           setPhase('countdown')
           fetchDisplay()
           return
@@ -122,6 +125,7 @@ export default function StudioDisplay() {
         if (data.status === 'waiting' && data.nextBooking?.start_time) {
           const diffSec = secondsToStart(data.nextBooking.start_time)
           if (diffSec <= 180) {
+            lastThankedId.current = lastActiveRef.current?.id || 'skip'
             setPhase('countdown')
             fetchDisplay()
             return
@@ -134,6 +138,7 @@ export default function StudioDisplay() {
           data.booking &&
           data.booking.id !== lastActiveRef.current?.id
         ) {
+          lastThankedId.current = data.booking.id
           setPhase('countdown')
           fetchDisplay()
           return
@@ -151,12 +156,15 @@ export default function StudioDisplay() {
         }
       }
 
-      // If active, update lastActiveRef and check for session end
+      // If active, check for session end (skip if already thanked)
       if (data.status === 'active' && data.booking) {
         lastActiveRef.current = data.booking
 
-        // Trigger thanks when countdown hits zero
-        if (calcRemaining(data.booking) <= 0) {
+        if (
+          lastThankedId.current !== data.booking.id &&
+          calcRemaining(data.booking) <= 0
+        ) {
+          lastThankedId.current = data.booking.id
           setPhase('thanks')
           setThanksName(data.booking.customer_name)
           thanksStartRef.current = Date.now()
@@ -164,10 +172,14 @@ export default function StudioDisplay() {
         return
       }
 
-      // Not active anymore — if the last active booking has truly ended,
-      // trigger the thanks phase (covers midnight-wrap + end-time pass)
-      if (lastActiveRef.current && calcRemaining(lastActiveRef.current) <= 0) {
+      // Not active anymore — trigger thanks if last active just ended
+      if (
+        lastActiveRef.current &&
+        lastThankedId.current !== lastActiveRef.current.id &&
+        calcRemaining(lastActiveRef.current) <= 0
+      ) {
         const b = lastActiveRef.current
+        lastThankedId.current = b.id
         setPhase('thanks')
         setThanksName(b.customer_name)
         thanksStartRef.current = Date.now()
