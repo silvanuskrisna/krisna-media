@@ -39,7 +39,7 @@ export default function AdminDashboard() {
       try {
         const [productsRes, bookingsRes, testimonialsRes, membersRes] = await Promise.all([
           supabase.from('products').select('id', { count: 'exact', head: true }),
-          supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(5),
+          supabase.from('bookings').select('*').in('status', ['pending', 'confirmed']).order('booking_date', { ascending: true }),
           supabase.from('testimonials').select('id', { count: 'exact', head: true }),
           supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'member'),
         ])
@@ -181,9 +181,9 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* Recent Bookings */}
+      {/* Pesanan Aktif */}
       <div className="glass rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Pesanan Terbaru</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">Pesanan Aktif</h2>
 
         {recentBookings.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
@@ -233,7 +233,7 @@ export default function AdminDashboard() {
         {recentBookings.length > 0 && (
           <div className="mt-4 text-center">
             <p className="text-xs text-muted-foreground">
-              Menampilkan {recentBookings.length} pesanan terbaru
+              Menampilkan {recentBookings.length} pesanan aktif
             </p>
           </div>
         )}
