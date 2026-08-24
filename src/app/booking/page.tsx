@@ -119,43 +119,43 @@ function BookingForm() {
   }, [selectedProduct?.name])
 
   const studioSlots = useMemo(() => {
-    if (!isStudio) return []
+      if (!isStudio) return []
 
-    const slots: { value: string; label: string; disabled: boolean; reason?: string }[] = []
+      const slots: { value: string; label: string; disabled: boolean; reason?: string }[] = []
 
-    for (let h = 8; h <= 22; h++) {
-      const timeStr = `${String(h).padStart(2, '0')}:00`
-      const slotEnd = h + duration
+      for (let h = 8; h <= 22; h++) {
+        const timeStr = `${String(h).padStart(2, '0')}:00`
+        const slotEnd = h + duration
 
-      let disabled = false
-      let reason = ''
+        let disabled = false
+        let reason = ''
 
-      // Midnight limit: 22:00 + 3h = 01:00 (past 00:00)
-      if (h === 22 && duration >= 3) {
-        disabled = true
-        reason = 'Melewati batas jam operasional (00:00)'
-      }
+        // Midnight limit: 22:00 + 3h = 01:00 (past 00:00)
+        if (h === 22 && duration >= 3) {
+          disabled = true
+          reason = 'Melewati batas jam operasional (00:00)'
+        }
 
-      // Check conflicts with existing bookings
-      if (!disabled) {
-        for (const booked of bookedSlots) {
-          const bookedStartH = parseInt(booked.start?.split(':')[0] || '0')
-          const bookedEndH = parseInt(booked.end?.split(':')[0] || '0')
+        // Check conflicts with existing bookings
+        if (!disabled) {
+          for (const booked of bookedSlots) {
+            const bookedStartH = parseInt(booked.start?.split(':')[0] || '0')
+            const bookedEndH = parseInt(booked.end?.split(':')[0] || '0')
 
-          // Overlap: new slot [h, h+duration] overlaps with booked [bookedStartH, bookedEndH]
-          if (h < bookedEndH && slotEnd > bookedStartH) {
-            disabled = true
-            reason = `Bentrok: ${booked.customer} (${booked.start}-${booked.end})`
-            break
+            // Overlap: new slot [h, h+duration] overlaps with booked [bookedStartH, bookedEndH]
+            if (h < bookedEndH && slotEnd > bookedStartH) {
+              disabled = true
+              reason = 'Sudah dibooking'
+              break
+            }
           }
         }
+
+        slots.push({ value: timeStr, label: `${timeStr} WITA`, disabled, reason })
       }
 
-      slots.push({ value: timeStr, label: `${timeStr} WITA`, disabled, reason })
-    }
-
-    return slots
-  }, [isStudio, duration, bookedSlots])
+      return slots
+    }, [isStudio, duration, bookedSlots])
 
   // Fetch products, promos, settings
   useEffect(() => {
