@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Calendar, Clock, ArrowLeft, Send, CheckCircle, User, Phone, Mail, MessageCircle, FileText, Tag, Banknote, Wallet, Upload } from 'lucide-react'
@@ -39,9 +39,8 @@ function BookingForm() {
   const [selectedPromoId, setSelectedPromoId] = useState('')
   const [paymentProof, setPaymentProof] = useState<File | null>(null)
   const [uploadingProof, setUploadingProof] = useState(false)
-  
+
   // Add-on states
-  const [hourAddons, setHourAddons] = useState(0)
   const [selectedGearIds, setSelectedGearIds] = useState<string[]>([])
 
   // Calculate if happy hour applies
@@ -96,24 +95,67 @@ function BookingForm() {
     return basePrice
   })()
 
-  // Calculate add-on total
+  // Calculate add-on total (gear only)
   const addonTotal = (() => {
     let total = 0
-    
-    // Hour add-ons: 85000 per jam
-    total += hourAddons * 85000
-    
+
     // Gear add-ons
     selectedGearIds.forEach(gearId => {
       const gear = addonGears.find(g => g.id === gearId)
       if (gear) total += gear.price
     })
-    
+
     return total
   })()
 
   // Calculate total price including add-ons
   const totalPrice = (calculatedPrice || 0) + addonTotal
+
+  // Generate available studio slots (08:00 - 22:00, jam genap)
+  const duration = useMemo(() => {
+    if (!selectedProduct?.name) return 1
+    const match = selectedProduct.name.match(/(\d+)\s*[Jj]am/)
+    return match ? parseInt(match[1]) : 1
+  }, [selectedProduct?.name])
+
+  const studioSlots = useMemo(() => {
+    if (!isStudio) return []
+
+    const slots: { value: string; label: string; disabled: boolean; reason?: string }[] = []
+
+    for (let h = 8; h <= 22; h++) {
+      const timeStr = `${String(h).padStart(2, '0')}:00`
+      const slotEnd = h + duration
+
+      let disabled = false
+      let reason = ''
+
+      // Midnight limit: 22:00 + 3h = 01:00 (past 00:00)
+      if (h === 22 && duration >= 3) {
+        disabled = true
+        reason = 'Melewati batas jam operasional (00:00)'
+      }
+
+      // Check conflicts with existing bookings
+      if (!disabled) {
+        for (const booked of bookedSlots) {
+          const bookedStartH = parseInt(booked.start?.split(':')[0] || '0')
+          const bookedEndH = parseInt(booked.end?.split(':')[0] || '0')
+
+          // Overlap: new slot [h, h+duration] overlaps with booked [bookedStartH, bookedEndH]
+          if (h < bookedEndH && slotEnd > bookedStartH) {
+            disabled = true
+            reason = `Bentrok: ${booked.customer} (${booked.start}-${booked.end})`
+            break
+          }
+        }
+      }
+
+      slots.push({ value: timeStr, label: `${timeStr} WITA`, disabled, reason })
+    }
+
+    return slots
+  }, [isStudio, duration, bookedSlots])
 
   // Fetch products, promos, settings
   useEffect(() => {
@@ -176,18 +218,18 @@ function BookingForm() {
       })
 
       // Addon gears — dari site_settings
-            const { data: gearSetting } = await supabase
-              .from('site_settings')
-              .select('value')
-              .eq('key', 'studio_addon_gears')
-              .single()
-            const rawGears = (gearSetting?.value as any)?.studio_addon_gears
-            if (Array.isArray(rawGears)) {
-              const activeGears = rawGears
-                .filter((g: any) => g.is_active)
-                .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
-              setAddonGears(activeGears)
-            }
+      const { data: gearSetting } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'studio_addon_gears')
+        .single()
+      const rawGears = (gearSetting?.value as any)?.studio_addon_gears
+      if (Array.isArray(rawGears)) {
+        const activeGears = rawGears
+          .filter((g: any) => g.is_active)
+          .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+        setAddonGears(activeGears)
+      }
     }
 
     fetchData()
@@ -424,21 +466,9 @@ function BookingForm() {
     const bookingId = data?.id
 
     // ───── SAVE ADD-ONS VIA API (bypass RLS) ─────
-    if (bookingId && (hourAddons > 0 || selectedGearIds.length > 0)) {
+    if (bookingId && selectedGearIds.length > 0) {
       try {
         const addonsToSave: any[] = []
-
-        // Hour add-ons
-        if (hourAddons > 0) {
-          addonsToSave.push({
-            addon_type: 'hour',
-            addon_id: null,
-            addon_name: `${hourAddons} Jam Tambahan`,
-            quantity: hourAddons,
-            unit_price: 85000,
-            subtotal: hourAddons * 85000,
-          })
-        }
 
         // Gear add-ons
         selectedGearIds.forEach(gearId => {
@@ -788,51 +818,113 @@ function BookingForm() {
 
                 {/* Time range */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="startTime"
-                      className="block text-sm font-medium text-foreground mb-1.5"
-                    >
-                      <Clock size={14} className="inline mr-1.5 -mt-0.5" />
-                      Jam Mulai <span className="text-muted-foreground text-xs">(opsional)</span>
-                    </label>
-                    <input
-                      id="startTime"
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => {
-                        setStartTime(e.target.value)
-                        // Auto-calculate end time based on product
-                        if (e.target.value && selectedProduct) {
-                          const match = selectedProduct.name.match(/(\d+)\s*[Jj]am/)
-                          if (match) {
-                            const hours = parseInt(match[1])
-                            const [h, m] = e.target.value.split(':').map(Number)
-                            const endH = h + hours
-                            const endStr = `${String(endH % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-                            setEndTime(endStr)
-                          }
-                        }
-                      }}
-                      className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 [color-scheme:dark]"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="endTime"
-                      className="block text-sm font-medium text-foreground mb-1.5"
-                    >
-                      <Clock size={14} className="inline mr-1.5 -mt-0.5" />
-                      Jam Selesai <span className="text-muted-foreground text-xs">(opsional)</span>
-                    </label>
-                    <input
-                      id="endTime"
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 [color-scheme:dark]"
-                    />
-                  </div>
+                  {isStudio ? (
+                    <>
+                      {/* ─── STUDIO DROPDOWN SLOT ─── */}
+                      <div>
+                        <label
+                          htmlFor="startTime"
+                          className="block text-sm font-medium text-foreground mb-1.5"
+                        >
+                          <Clock size={14} className="inline mr-1.5 -mt-0.5" />
+                          Jam Mulai <span className="text-red-400">*</span>
+                        </label>
+                        <select
+                          id="startTime"
+                          value={startTime}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setStartTime(val)
+                            if (val) {
+                              const h = parseInt(val.split(':')[0])
+                              const endH = h + duration
+                              setEndTime(`${String(endH % 24).padStart(2, '0')}:00`)
+                            } else {
+                              setEndTime('')
+                            }
+                          }}
+                          required
+                          className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 appearance-none"
+                        >
+                          <option value="">Pilih jam mulai...</option>
+                          {studioSlots.map((slot) => (
+                            <option
+                              key={slot.value}
+                              value={slot.value}
+                              disabled={slot.disabled}
+                              className={slot.disabled ? 'text-muted-foreground' : ''}
+                            >
+                              {slot.label}{slot.reason ? ` — ${slot.reason}` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        {startTime && (
+                          <p className="text-xs text-muted-foreground mt-1.5">
+                            Durasi: {duration} jam · Selesai: {endTime || '-'} WITA
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">
+                          <Clock size={14} className="inline mr-1.5 -mt-0.5" />
+                          Jam Selesai
+                        </label>
+                        <input
+                          type="text"
+                          value={endTime ? `${endTime} WITA` : '-'}
+                          readOnly
+                          className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white/70 text-sm cursor-not-allowed"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* ─── NON-STUDIO: TIME INPUT ─── */}
+                      <div>
+                        <label
+                          htmlFor="startTime"
+                          className="block text-sm font-medium text-foreground mb-1.5"
+                        >
+                          <Clock size={14} className="inline mr-1.5 -mt-0.5" />
+                          Jam Mulai <span className="text-muted-foreground text-xs">(opsional)</span>
+                        </label>
+                        <input
+                          id="startTime"
+                          type="time"
+                          value={startTime}
+                          onChange={(e) => {
+                            setStartTime(e.target.value)
+                            if (e.target.value && selectedProduct) {
+                              const match = selectedProduct.name.match(/(\d+)\s*[Jj]am/)
+                              if (match) {
+                                const hours = parseInt(match[1])
+                                const [h, m] = e.target.value.split(':').map(Number)
+                                const endH = h + hours
+                                setEndTime(`${String(endH % 24).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+                              }
+                            }
+                          }}
+                          className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 [color-scheme:dark]"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="endTime"
+                          className="block text-sm font-medium text-foreground mb-1.5"
+                        >
+                          <Clock size={14} className="inline mr-1.5 -mt-0.5" />
+                          Jam Selesai <span className="text-muted-foreground text-xs">(opsional)</span>
+                        </label>
+                        <input
+                          id="endTime"
+                          type="time"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          className="w-full px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 [color-scheme:dark]"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Slots terisi */}
@@ -887,10 +979,8 @@ function BookingForm() {
               <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up delay-100">
                 <AddOnSection
                   addonGears={addonGears}
-                  hourAddons={hourAddons}
                   selectedGearIds={selectedGearIds}
                   addonTotal={addonTotal}
-                  onHourAddonsChange={setHourAddons}
                   onGearToggle={(gearId) => {
                     setSelectedGearIds(prev =>
                       prev.includes(gearId)

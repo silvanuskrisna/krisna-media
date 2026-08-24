@@ -5,19 +5,15 @@ import type { StudioAddonGear } from '@/lib/types'
 
 interface AddOnSectionProps {
   addonGears: StudioAddonGear[]
-  hourAddons: number
   selectedGearIds: string[]
   addonTotal: number
-  onHourAddonsChange: (value: number) => void
   onGearToggle: (gearId: string) => void
 }
 
 export function AddOnSection({
   addonGears,
-  hourAddons,
   selectedGearIds,
   addonTotal,
-  onHourAddonsChange,
   onGearToggle,
 }: AddOnSectionProps) {
   const selectedGears = addonGears.filter(g => selectedGearIds.includes(g.id))
@@ -66,7 +62,7 @@ export function AddOnSection({
       )}
 
       {/* Add-on Summary */}
-      {(hourAddons > 0 || selectedGearIds.length > 0) && (
+      {selectedGearIds.length > 0 && (
         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
           <div className="text-sm text-gray-600">Total Add-ons:</div>
           <div className="text-lg font-bold text-gray-900">
