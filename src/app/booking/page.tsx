@@ -927,34 +927,9 @@ function BookingForm() {
                   )}
                 </div>
 
-                {/* Slots terisi */}
-                {bookedSlots.length > 0 && (
-                  <div className="glass rounded-xl p-4 border border-amber-500/20 bg-amber-500/5 animate-scale-in">
-                    <div className="flex items-start gap-3">
-                      <Clock size={16} className="text-amber-400 mt-0.5 shrink-0" />
-                      <div className="space-y-1.5">
-                        <p className="text-sm font-medium text-amber-300">
-                          ⚠️ Jadwal sudah terisi di tanggal ini:
-                        </p>
-                        <div className="space-y-1">
-                          {bookedSlots.map((slot, i) => (
-                            <p key={i} className="text-xs text-muted-foreground">
-                              {slot.start !== '-' && slot.end !== '-'
-                                ? `${slot.start} - ${slot.end}`
-                                : 'Full hari'} · {slot.customer} ({slot.status})
-                            </p>
-                          ))}
-                        </div>
-                        {checkingSlots && (
-                          <p className="text-xs text-muted-foreground animate-pulse">Memeriksa...</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
                 </>)}
 
-                {/* Catatan */}
+                                {/* Catatan */}
                 <div>
                   <label
                     htmlFor="notes"
