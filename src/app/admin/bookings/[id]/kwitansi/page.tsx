@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { formatDate, formatPrice } from '@/lib/utils'
-import { ArrowLeft, Printer } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import type { Booking } from '@/lib/types'
 
 export default function AdminKwitansi() {
@@ -64,24 +64,17 @@ export default function AdminKwitansi() {
   return (
     <>
       {/* ─── TOOLBAR ─── */}
-      <div className="max-w-2xl mx-auto px-4 py-4 no-print">
-        <div className="flex items-center justify-between">
-          <Link
-            href={`/admin/bookings/${params.id}`}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Kembali ke detail pesanan
-          </Link>
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 text-accent rounded-lg text-sm font-medium hover:bg-accent/30 transition-colors"
-          >
-            <Printer size={16} />
-            Cetak / Print
-          </button>
-        </div>
-      </div>
+            <div className="max-w-2xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-between">
+                <Link
+                  href={`/admin/bookings/${params.id}`}
+                  className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft size={16} />
+                  Kembali ke detail pesanan
+                </Link>
+              </div>
+            </div>
 
       {/* ─── KWITANSI ─── */}
       <div className="max-w-2xl mx-auto px-4 pb-12">
@@ -92,8 +85,6 @@ export default function AdminKwitansi() {
             <p className="text-xs text-gray-500 mt-1">Banjarmasin</p>
             <p className="text-xs text-gray-500">WA: 0811-5191-097</p>
           </div>
-
-          {/* Title */}
           <div className="text-center mb-6">
             <h2 className="text-lg font-bold uppercase">Kwitansi Pembayaran</h2>
             <div className="flex items-center justify-center gap-2 mt-1">
@@ -176,7 +167,7 @@ export default function AdminKwitansi() {
               </div>
               <div className="text-center">
                 <p className="text-xs text-gray-500 mb-8">Hormat Kami,</p>
-                <p className="text-sm font-medium border-t border-gray-400 pt-1 w-32">( Silvanus Krisna )</p>
+                <p className="text-sm font-medium border-t border-gray-400 pt-1 w-32">X-Studio</p>
               </div>
             </div>
           </div>
@@ -187,13 +178,6 @@ export default function AdminKwitansi() {
           Kwitansi ini adalah bukti pembayaran yang sah · Krisna Media © {new Date().getFullYear()}
         </p>
       </div>
-
-      <style jsx>{`
-        @media print {
-          .no-print { display: none !important; }
-          @page { margin: 15mm; }
-        }
-      `}</style>
     </>
   )
 }
