@@ -84,9 +84,9 @@ export default function AdminKwitansi() {
         </div>
 
         {/* ─── KWITANSI ─── */}
-        <div className="max-w-2xl mx-auto px-4 pb-12">
-          <div className="bg-white text-black rounded-xl p-8 md:p-10 shadow-lg border border-gray-200">
-          {/* Header */}
+                <div className="max-w-2xl mx-auto px-4 pb-12">
+                  <div className="text-black p-8 md:p-10">
+                  {/* Header */}
           <div className="text-center border-b-2 border-gray-300 pb-5 mb-6">
             <h1 className="text-xl font-bold uppercase tracking-wider">Krisna Media</h1>
             <p className="text-xs text-gray-500 mt-1">Banjarmasin</p>
@@ -189,6 +189,7 @@ export default function AdminKwitansi() {
         @media print {
           .no-print { display: none !important; }
           footer, header, nav, aside { display: none !important; }
+          body { background: white !important; }
           @page { margin: 15mm; }
         }
       `}</style>
