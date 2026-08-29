@@ -185,9 +185,10 @@ export default function AdminKwitansi() {
           Kwitansi ini adalah bukti pembayaran yang sah · Krisna Media © {new Date().getFullYear()}
         </p>
       </div>
-      <style jsx>{`
+      <style>{`
         @media print {
           .no-print { display: none !important; }
+          footer, header, nav, aside { display: none !important; }
           @page { margin: 15mm; }
         }
       `}</style>
