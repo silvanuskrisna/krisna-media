@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { formatDate, formatPrice } from '@/lib/utils'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Printer } from 'lucide-react'
 import type { Booking } from '@/lib/types'
 
 export default function AdminKwitansi() {
@@ -62,23 +62,30 @@ export default function AdminKwitansi() {
   const addonTotal = addons.reduce((sum, a) => sum + (a.subtotal || a.unit_price || 0), 0)
 
   return (
-    <>
-      {/* ─── TOOLBAR ─── */}
-            <div className="max-w-2xl mx-auto px-4 py-4">
-              <div className="flex items-center justify-between">
-                <Link
-                  href={`/admin/bookings/${params.id}`}
-                  className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ArrowLeft size={16} />
-                  Kembali ke detail pesanan
-                </Link>
-              </div>
-            </div>
+      <>
+        {/* ─── TOOLBAR ─── */}
+        <div className="max-w-2xl mx-auto px-4 py-4 no-print">
+          <div className="flex items-center justify-between">
+            <Link
+              href={`/admin/bookings/${params.id}`}
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft size={16} />
+              Kembali ke detail pesanan
+            </Link>
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 text-accent rounded-lg text-sm font-medium hover:bg-accent/30 transition-colors"
+            >
+              <Printer size={16} />
+              Cetak / Print
+            </button>
+          </div>
+        </div>
 
-      {/* ─── KWITANSI ─── */}
-      <div className="max-w-2xl mx-auto px-4 pb-12">
-        <div className="bg-white text-black rounded-xl p-8 md:p-10 shadow-lg border border-gray-200">
+        {/* ─── KWITANSI ─── */}
+        <div className="max-w-2xl mx-auto px-4 pb-12">
+          <div className="bg-white text-black rounded-xl p-8 md:p-10 shadow-lg border border-gray-200">
           {/* Header */}
           <div className="text-center border-b-2 border-gray-300 pb-5 mb-6">
             <h1 className="text-xl font-bold uppercase tracking-wider">Krisna Media</h1>
@@ -178,6 +185,12 @@ export default function AdminKwitansi() {
           Kwitansi ini adalah bukti pembayaran yang sah · Krisna Media © {new Date().getFullYear()}
         </p>
       </div>
+      <style jsx>{`
+        @media print {
+          .no-print { display: none !important; }
+          @page { margin: 15mm; }
+        }
+      `}</style>
     </>
   )
 }
