@@ -265,36 +265,53 @@ function BookingForm() {
   }, [selectedProductId])
 
   // ───── CEK KETERSEDIAAN SAAT PILIH PRODUK + TANGGAL ─────
-  useEffect(() => {
-    if (!selectedProductId || !bookingDate) {
-      setBookedSlots([])
-      return
-    }
+    useEffect(() => {
+      if (!selectedProductId || !bookingDate) {
+        setBookedSlots([])
+        return
+      }
 
-    setCheckingSlots(true)
-    supabase
-      .from('bookings')
-      .select('start_time, end_time, customer_name, status')
-      .eq('product_id', selectedProductId)
-      .eq('booking_date', bookingDate)
-      .in('status', ['pending', 'confirmed'])
-      .order('start_time', { ascending: true })
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setBookedSlots(
-            data.map((b) => ({
-              start: b.start_time?.slice(0, 5) ?? '-',
-              end: b.end_time?.slice(0, 5) ?? '-',
-              customer: b.customer_name,
-              status: b.status === 'confirmed' ? 'Dikonfirmasi' : 'Pending',
-            }))
-          )
-        } else {
-          setBookedSlots([])
-        }
-        setCheckingSlots(false)
-      })
-  }, [selectedProductId, bookingDate])
+      // STUDIO: semua booking studio (produk apapun) saling bentrok,
+      // karena ruangannya fisik yang sama. Non-studio: cek per produk.
+      const studioIds = products
+        .filter((p) => p.category === 'studio')
+        .map((p) => p.id)
+
+      if (isStudio && studioIds.length === 0) {
+        // Produk belum selesai dimuat — tunggu efek berikutnya
+        return
+      }
+
+      setCheckingSlots(true)
+
+      let query = supabase
+        .from('bookings')
+        .select('start_time, end_time, customer_name, status')
+        .eq('booking_date', bookingDate)
+        .in('status', ['pending', 'confirmed'])
+
+      query = isStudio
+        ? query.in('product_id', studioIds)
+        : query.eq('product_id', selectedProductId)
+
+      query
+        .order('start_time', { ascending: true })
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            setBookedSlots(
+              data.map((b) => ({
+                start: b.start_time?.slice(0, 5) ?? '-',
+                end: b.end_time?.slice(0, 5) ?? '-',
+                customer: b.customer_name,
+                status: b.status === 'confirmed' ? 'Dikonfirmasi' : 'Pending',
+              }))
+            )
+          } else {
+            setBookedSlots([])
+          }
+          setCheckingSlots(false)
+        })
+    }, [selectedProductId, bookingDate, isStudio, products])
 
   // Auto-fill email from session & redirect if not logged in
   useEffect(() => {
@@ -348,12 +365,23 @@ function BookingForm() {
 
     // ───── CEK KONFLIK BOOKING (skip untuk produk) ─────
     if (!isProduct) {
-      const { data: existingBookings, error: conflictError } = await supabase
+      // STUDIO: cek SEMUA booking studio (produk apapun) biar gak dobel.
+      // Non-studio: cek per produk (resource terpisah).
+      const studioIds = products
+        .filter((p) => p.category === 'studio')
+        .map((p) => p.id)
+
+      let conflictQuery = supabase
         .from('bookings')
         .select('id, start_time, end_time, customer_name, status')
-        .eq('product_id', selectedProductId)
         .eq('booking_date', bookingDate)
         .in('status', ['pending', 'confirmed'])
+
+      conflictQuery = isStudio
+        ? conflictQuery.in('product_id', studioIds)
+        : conflictQuery.eq('product_id', selectedProductId)
+
+      const { data: existingBookings, error: conflictError } = await conflictQuery
         .order('start_time', { ascending: true })
 
       if (conflictError) {
