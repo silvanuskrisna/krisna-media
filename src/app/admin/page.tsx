@@ -37,15 +37,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [productsRes, bookingsRes, testimonialsRes, membersRes] = await Promise.all([
+        const [productsRes, bookingsRes, totalRes, testimonialsRes, membersRes] = await Promise.all([
           supabase.from('products').select('id', { count: 'exact', head: true }),
           supabase.from('bookings').select('*').in('status', ['pending', 'confirmed']).order('booking_date', { ascending: true }),
+          supabase.from('bookings').select('id', { count: 'exact', head: true }),
           supabase.from('testimonials').select('id', { count: 'exact', head: true }),
           supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'member'),
         ])
 
         const { count: totalProducts } = productsRes
-        const { data: bookings, count: totalBookings } = bookingsRes
+        const { data: bookings } = bookingsRes
+        const { count: totalBookings } = totalRes
         const { count: totalTestimonials } = testimonialsRes
         const { count: totalMembers } = membersRes
 

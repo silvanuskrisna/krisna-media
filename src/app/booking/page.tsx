@@ -14,6 +14,12 @@ function BookingForm() {
   const searchParams = useSearchParams()
   const productSlug = searchParams.get('product')
 
+  // "HH:MM" → menit sejak tengah malam (buat perbandingan overlap)
+  const toMinutes = (t: string): number => {
+    const [h, m] = (t || '0:00').split(':').map(Number)
+    return (h || 0) * 60 + (m || 0)
+  }
+
   const [products, setProducts] = useState<Product[]>([])
   const [promos, setPromos] = useState<Promo[]>([])
   const [happyHour, setHappyHour] = useState<HappyHourSettings | null>(null)
@@ -137,19 +143,23 @@ function BookingForm() {
         }
 
         // Check conflicts with existing bookings
-        if (!disabled) {
-          for (const booked of bookedSlots) {
-            const bookedStartH = parseInt(booked.start?.split(':')[0] || '0')
-            const bookedEndH = parseInt(booked.end?.split(':')[0] || '0')
+                if (!disabled) {
+                  for (const booked of bookedSlots) {
+                    const bookedStartH = parseInt(booked.start?.split(':')[0] || '0')
+                    let bookedEndH = parseInt(booked.end?.split(':')[0] || '0')
 
-            // Overlap: new slot [h, h+duration] overlaps with booked [bookedStartH, bookedEndH]
-            if (h < bookedEndH && slotEnd > bookedStartH) {
-              disabled = true
-              reason = 'Sudah dibooking'
-              break
-            }
-          }
-        }
+                    // Midnight wrap: booking yang melewati 00:00 (mis. 21:00-00:00)
+                    // end_time-nya "00:00" → dianggap +24 jam biar overlap-nya ke-detect.
+                    if (bookedEndH <= bookedStartH) bookedEndH += 24
+
+                    // Overlap: new slot [h, h+duration] overlaps with booked [bookedStartH, bookedEndH]
+                    if (h < bookedEndH && slotEnd > bookedStartH) {
+                      disabled = true
+                      reason = 'Sudah dibooking'
+                      break
+                    }
+                  }
+                }
 
         slots.push({ value: timeStr, label: `${timeStr} WITA`, disabled, reason })
       }
@@ -396,19 +406,29 @@ function BookingForm() {
         let conflictDetail = ''
 
         if (startTime && endTime) {
-          for (const booking of existingBookings) {
-            if (booking.start_time && booking.end_time) {
-              const newStart = startTime
-              const newEnd = endTime
-              const existStart = booking.start_time.slice(0, 5)
-              const existEnd = booking.end_time.slice(0, 5)
-              if (newStart < existEnd && newEnd > existStart) {
-                conflict = true
-                conflictDetail += `\n• ${booking.customer_name} (${existStart}-${existEnd}) — ${booking.status === 'confirmed' ? 'Dikonfirmasi' : 'Pending'}`
-              }
-            }
-          }
-        } else {
+                  for (const booking of existingBookings) {
+                    if (booking.start_time && booking.end_time) {
+                      const newStart = startTime
+                      const newEnd = endTime
+                      const existStart = booking.start_time.slice(0, 5)
+                      const existEnd = booking.end_time.slice(0, 5)
+
+                      // Hitung overlap pakai menit — handle booking yang lewat 00:00
+                      // (mis. 21:00-00:00 → end +24 jam).
+                      let newStartMin = toMinutes(newStart)
+                      let newEndMin = toMinutes(newEnd)
+                      let existStartMin = toMinutes(existStart)
+                      let existEndMin = toMinutes(existEnd)
+                      if (newEndMin <= newStartMin) newEndMin += 1440
+                      if (existEndMin <= existStartMin) existEndMin += 1440
+
+                      if (newStartMin < existEndMin && newEndMin > existStartMin) {
+                        conflict = true
+                        conflictDetail += `\n• ${booking.customer_name} (${existStart}-${existEnd}) — ${booking.status === 'confirmed' ? 'Dikonfirmasi' : 'Pending'}`
+                      }
+                    }
+                  }
+                } else {
           conflict = true
           conflictDetail = ` (${existingBookings.length} booking lain pada tanggal ini)`
         }
