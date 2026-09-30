@@ -104,58 +104,46 @@ async function MemberDashboard() {
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12 animate-fade-in-up delay-300">
-          <Link
-            href="/my-kmc-lessons"
-            className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-purple-500/40 transition-all group"
-          >
-            <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500/20 transition-colors shrink-0">
-              <Music size={20} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">KMC</p>
-              <p className="text-xs text-muted-foreground">Kursus Musik saya</p>
-            </div>
-          </Link>
-          <Link
-            href="/booking"
-            className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-accent/30 transition-all group"
-          >
-            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:bg-accent/20 transition-colors shrink-0">
-              <Calendar size={20} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Booking Baru</p>
-              <p className="text-xs text-muted-foreground">Pesan layanan sekarang</p>
-            </div>
-          </Link>
-          <Link
-            href="/services"
-            className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-accent/30 transition-all group"
-          >
-            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:bg-accent/20 transition-colors shrink-0">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Layanan</p>
-              <p className="text-xs text-muted-foreground">Lihat katalog lengkap</p>
-            </div>
-          </Link>
-          <Link
-            href="/contact"
-            className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-accent/30 transition-all group"
-          >
-            <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:bg-accent/20 transition-colors shrink-0">
-              <Clock size={20} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Hubungi Kami</p>
-              <p className="text-xs text-muted-foreground">Butuh bantuan?</p>
-            </div>
-          </Link>
-        </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-12 animate-fade-in-up delay-300">
+                  <Link
+                    href="/booking"
+                    className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-accent/30 transition-all group"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:bg-accent/20 transition-colors shrink-0">
+                      <Calendar size={20} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Booking Baru</p>
+                      <p className="text-xs text-muted-foreground">Pesan layanan sekarang</p>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/services"
+                    className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-accent/30 transition-all group"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:bg-accent/20 transition-colors shrink-0">
+                      <Sparkles size={20} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Layanan</p>
+                      <p className="text-xs text-muted-foreground">Lihat katalog lengkap</p>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="glass rounded-xl p-5 hover-card flex items-center gap-4 border border-border/50 hover:border-accent/30 transition-all group"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-accent/10 flex items-center justify-center text-accent group-hover:bg-accent/20 transition-colors shrink-0">
+                      <Clock size={20} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Hubungi Kami</p>
+                      <p className="text-xs text-muted-foreground">Butuh bantuan?</p>
+                    </div>
+                  </Link>
+                </div>
 
-        {/* Bookings list */}
+                {/* Bookings list */}
         <h2 className="animate-fade-in-up delay-400 text-xl font-semibold text-foreground mb-4">
           Pesanan Saya
         </h2>
