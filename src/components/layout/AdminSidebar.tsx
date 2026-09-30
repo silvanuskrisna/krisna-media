@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, Calendar, MessageSquare, Users, Settings, LogOut, Menu, X, Music, ImageIcon, Tag, GraduationCap, FileText, DollarSign, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, Package, Calendar, MessageSquare, Users, Settings, LogOut, Menu, X, Music, ImageIcon, Tag, ClipboardList } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const navLinks = [
@@ -13,11 +13,6 @@ const navLinks = [
   { href: '/admin/promos', label: 'Promo', icon: Tag },
   { href: '/admin/bookings', label: 'Pesanan', icon: Calendar },
   { href: '/admin/templates', label: 'Template', icon: ClipboardList },
-  // KMC Section
-  { href: '/admin/kmc-members', label: 'KMC Member', icon: GraduationCap },
-  { href: '/admin/kmc-enrollments', label: 'KMC Enroll', icon: FileText },
-  { href: '/admin/kmc-schedules', label: 'KMC Jadwal', icon: Music },
-  { href: '/admin/kmc-invoices', label: 'KMC Tagihan', icon: DollarSign },
   { href: '/admin/testimonials', label: 'Testimoni', icon: MessageSquare },
   { href: '/admin/gallery', label: 'Galeri', icon: ImageIcon },
   { href: '/admin/settings', label: 'Pengaturan', icon: Settings },

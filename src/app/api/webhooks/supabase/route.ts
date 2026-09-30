@@ -26,20 +26,6 @@ function formatBooking(record: Record<string, unknown>): string {
   ].filter(Boolean).join('\n')
 }
 
-function formatKmcEnrollment(record: Record<string, unknown>): string {
-  return [
-    '🎵 **Pendaftaran KMC Baru!**',
-    `**Murid ID:** ${record.student_id || '-'}`,
-    `**Instrumen:** ${record.instrument || '-'}`,
-    `**Level:** ${record.experience_level || '-'}`,
-    `**Status:** ${record.status || 'Pending'}`,
-    record.tuition_fee ? `**Biaya:** Rp ${Number(record.tuition_fee).toLocaleString('id-ID')}` : '',
-    record.admin_notes ? `**Catatan Admin:** ${record.admin_notes}` : '',
-    '',
-    `🔗 https://krisnamedia.id/admin/kmc-enrollments`,
-  ].filter(Boolean).join('\n')
-}
-
 function formatMember(record: Record<string, unknown>): string {
   return [
     '👤 **Member Baru Terdaftar!**',
@@ -52,34 +38,6 @@ function formatMember(record: Record<string, unknown>): string {
   ].filter(Boolean).join('\n')
 }
 
-function formatInvoice(record: Record<string, unknown>): string {
-  const status = record.status as string
-  let icon = '💰'
-  if (status === 'paid') icon = '✅'
-  if (status === 'cancelled') icon = '❌'
-
-  return [
-    `${icon} **${status === 'paid' ? 'Pembayaran Diterima!' : status === 'cancelled' ? 'Pembayaran Dibatalkan' : 'Tagihan Baru'}**`,
-    `**Member ID:** ${record.member_id || '-'}`,
-    `**Periode:** ${record.period || '-'}`,
-    `**Total:** Rp ${Number(record.total || 0).toLocaleString('id-ID')}`,
-    `**Status:** ${record.status || '-'}`,
-    record.due_date ? `**Jatuh Tempo:** ${record.due_date}` : '',
-    '',
-    `🔗 https://krisnamedia.id/admin/kmc-invoices`,
-  ].filter(Boolean).join('\n')
-}
-
-function formatStudent(record: Record<string, unknown>): string {
-  return [
-    '🧑‍🎓 **Siswa Baru Ditambahkan!**',
-    `**Nama:** ${record.name || '-'}`,
-    record.age ? `**Usia:** ${record.age} tahun` : '',
-    record.whatsapp ? `**WA:** ${record.whatsapp}` : '',
-    record.notes ? `**Catatan:** ${record.notes}` : '',
-  ].filter(Boolean).join('\n')
-}
-
 function formatMessage(payload: SupabaseWebhookPayload): string | null {
   if (payload.type !== 'INSERT') return null
 
@@ -88,14 +46,8 @@ function formatMessage(payload: SupabaseWebhookPayload): string | null {
   switch (table) {
     case 'bookings':
       return formatBooking(record)
-    case 'enrollments':
-      return formatKmcEnrollment(record)
     case 'members':
       return formatMember(record)
-    case 'invoices':
-      return formatInvoice(record)
-    case 'students':
-      return formatStudent(record)
     default:
       return null
   }

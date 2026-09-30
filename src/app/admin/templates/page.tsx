@@ -10,8 +10,7 @@ const categories = [
   { value: 'payment', label: 'Pembayaran' },
   { value: 'general', label: 'Umum' },
   { value: 'studio', label: 'Studio' },
-  { value: 'kmc', label: 'KMC' },
-]
+  ]
 
 const triggerEvents = [
   { value: '', label: '— Manual (pilih dari Template Lainnya) —' },
@@ -28,8 +27,7 @@ const categoryColors: Record<string, string> = {
   payment: 'bg-green-500/20 text-green-400',
   general: 'bg-gray-500/20 text-gray-400',
   studio: 'bg-purple-500/20 text-purple-400',
-  kmc: 'bg-pink-500/20 text-pink-400',
-}
+  }
 
 export default function AdminTemplates() {
   const [templates, setTemplates] = useState<AdminTemplate[]>([])

@@ -12,16 +12,14 @@ const categoryColors: Record<string, string> = {
   payment: 'bg-green-500/20 text-green-400',
   general: 'bg-gray-500/20 text-gray-400',
   studio: 'bg-purple-500/20 text-purple-400',
-  kmc: 'bg-pink-500/20 text-pink-400',
-}
+  }
 
 const categoryLabels: Record<string, string> = {
   booking: 'Booking',
   payment: 'Pembayaran',
   general: 'Umum',
   studio: 'Studio',
-  kmc: 'KMC',
-}
+  }
 
 /**
  * Map booking status → trigger_event yang relevan.

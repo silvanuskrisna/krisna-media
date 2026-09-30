@@ -91,13 +91,6 @@ const jsonLd = {
           "name": "Alat Musik & Aksesoris",
         },
       },
-      {
-        "@type": "Offer",
-        "itemOffered": {
-          "@type": "Service",
-          "name": "Kursus Musik (KMC)",
-        },
-      },
     ],
   },
   "openingHoursSpecification": [
