@@ -33,7 +33,6 @@ async function getProducts(): Promise<Product[]> {
     .from('products')
     .select('*')
     .eq('is_active', true)
-    .neq('category', 'kursus-musik')
     .order('sort_order', { ascending: true })
 
   return data ?? []

@@ -17,7 +17,6 @@ async function getFeaturedProducts(): Promise<Product[]> {
     .select('*')
     .eq('is_active', true)
     .eq('featured', true)
-    .neq('category', 'kursus-musik')
     .order('sort_order', { ascending: true })
     .limit(6)
 

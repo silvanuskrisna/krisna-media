@@ -119,6 +119,8 @@ export default function AdminSettings() {
 
       if (error) throw error
 
+      let gearsLoaded = false
+
       if (data && data.length > 0) {
         const merged: SettingsData = { ...defaultSettings }
         for (const row of data) {
@@ -136,12 +138,25 @@ export default function AdminSettings() {
             }
           }
 
-          // Load gears from site_settings
+          // Load gears dari site_settings
           if (row.key === 'studio_addon_gears' && Array.isArray(row.value?.studio_addon_gears)) {
+            gearsLoaded = true
             setGears(row.value.studio_addon_gears)
           }
         }
         setSettings(merged)
+      }
+
+      // Fallback: kalau site_settings belum punya gear, tampilkan dari tabel
+      // (data lama) supaya tinggal klik Simpan untuk migrasi ke site_settings.
+      if (!gearsLoaded) {
+        const { data: tableGears } = await supabase
+          .from('studio_addon_gears')
+          .select('*')
+          .order('sort_order', { ascending: true })
+        if (tableGears && tableGears.length > 0) {
+          setGears(tableGears)
+        }
       }
     } catch (err) {
       console.error('Failed to fetch settings:', err)
