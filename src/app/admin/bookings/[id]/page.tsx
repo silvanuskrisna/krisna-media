@@ -187,15 +187,28 @@ export default function AdminBookingDetail() {
             </div>
           </div>
 
-          {booking.payment_method && (
-            <div className="flex items-start gap-3">
-              <Tag size={16} className="text-muted-foreground mt-0.5 shrink-0" />
-              <div>
-                <p className="text-xs text-muted-foreground">Metode Pembayaran</p>
-                <p className="text-sm text-foreground font-medium">{booking.payment_method}</p>
-              </div>
-            </div>
-          )}
+          {booking.discount_code && (
+                      <div className="flex items-start gap-3">
+                        <Tag size={16} className="text-muted-foreground mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Kode Diskon</p>
+                          <p className="text-sm text-foreground font-medium">
+                            {booking.discount_code}{' '}
+                            <span className="text-teal-400">(−{formatPrice(booking.discount_amount || 0)})</span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {booking.payment_method && (
+                      <div className="flex items-start gap-3">
+                        <Tag size={16} className="text-muted-foreground mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Metode Pembayaran</p>
+                          <p className="text-sm text-foreground font-medium">{booking.payment_method}</p>
+                        </div>
+                      </div>
+                    )}
         </div>
 
         {/* Add-ons */}

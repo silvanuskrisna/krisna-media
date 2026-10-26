@@ -134,8 +134,8 @@ export default function AdminKwitansi() {
             </tbody>
           </table>
 
-          {/* Add-ons */}
-          {addons.length > 0 && (
+          {/* Add-ons & Diskon */}
+          {(addons.length > 0 || booking.discount_code) && (
             <div className="border-t border-gray-200 pt-4 mb-6">
               <p className="text-xs text-gray-500 mb-2">Rincian:</p>
               <table className="w-full text-sm">
@@ -148,7 +148,7 @@ export default function AdminKwitansi() {
                 <tbody>
                   <tr>
                     <td className="py-1">{booking.product_name}</td>
-                    <td className="py-1 text-right">{formatPrice((booking.total_price || 0) - addonTotal)}</td>
+                    <td className="py-1 text-right">{formatPrice((booking.total_price || 0) + (booking.discount_amount || 0) - addonTotal)}</td>
                   </tr>
                   {addons.map((a) => (
                     <tr key={a.id}>
@@ -156,6 +156,12 @@ export default function AdminKwitansi() {
                       <td className="py-1 text-right text-gray-600">{formatPrice(a.subtotal || a.unit_price || 0)}</td>
                     </tr>
                   ))}
+                  {booking.discount_code && (
+                    <tr>
+                      <td className="py-1 text-gray-600">Diskon ({booking.discount_code})</td>
+                      <td className="py-1 text-right text-red-600">−{formatPrice(booking.discount_amount || 0)}</td>
+                    </tr>
+                  )}
                   <tr className="border-t border-gray-200 font-bold">
                     <td className="py-1.5">Total</td>
                     <td className="py-1.5 text-right">{formatPrice(booking.total_price || 0)}</td>

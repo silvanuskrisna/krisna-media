@@ -44,6 +44,12 @@ export interface Booking {
   total_price: number | null
   promo_id: string | null
   promo_name: string | null
+  discount_code_id: string | null
+  discount_code: string | null
+  discount_type: 'percent' | 'nominal' | null
+  discount_value: number | null
+  discount_amount: number | null
+  discount_base_price: number | null
   notes: string | null
   admin_notes: string | null
   created_at: string
@@ -82,6 +88,21 @@ export interface Promo {
   price_per_2hour: number
   quota: number
   used: number
+  start_date: string | null
+  end_date: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface DiscountCode {
+  id: string
+  code: string
+  name: string
+  type: 'percent' | 'nominal'
+  value: number
+  quota: number | null
+  max_use_per_phone: number
   start_date: string | null
   end_date: string | null
   is_active: boolean

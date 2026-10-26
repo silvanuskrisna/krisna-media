@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Calendar, Clock, ArrowLeft, Send, CheckCircle, User, Phone, Mail, MessageCircle, FileText, Tag, Banknote, Wallet, Upload } from 'lucide-react'
+import { Calendar, Clock, ArrowLeft, Send, CheckCircle, User, Phone, Mail, MessageCircle, FileText, Tag, Banknote, Wallet, Upload, Ticket, X } from 'lucide-react'
 import { cn, formatPrice, getWhatsAppUrl } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { AddOnSection } from '@/components/AddOnSection'
@@ -44,7 +44,13 @@ function BookingForm() {
   const [paymentMethod, setPaymentMethod] = useState<'transfer' | 'cash' | ''>('')
   const [selectedPromoId, setSelectedPromoId] = useState('')
   const [paymentProof, setPaymentProof] = useState<File | null>(null)
-  const [uploadingProof, setUploadingProof] = useState(false)
+    const [uploadingProof, setUploadingProof] = useState(false)
+
+    // Kode diskon state
+    const [discountInput, setDiscountInput] = useState('')
+    const [discount, setDiscount] = useState<{ id: string; code: string; name: string; type: 'percent' | 'nominal'; value: number; amount: number; base_price: number } | null>(null)
+    const [discountChecking, setDiscountChecking] = useState(false)
+    const [discountError, setDiscountError] = useState<string | null>(null)
 
   // Add-on states
   const [selectedGearIds, setSelectedGearIds] = useState<string[]>([])
@@ -114,8 +120,8 @@ function BookingForm() {
     return total
   })()
 
-  // Calculate total price including add-ons
-  const totalPrice = (calculatedPrice || 0) + addonTotal
+  // Calculate total price including add-ons (minus discount code if applied)
+    const totalPrice = Math.max(0, (calculatedPrice || 0) + addonTotal - (discount?.amount || 0))
 
   // Generate available studio slots (08:00 - 22:00, jam genap)
   const duration = useMemo(() => {
@@ -244,10 +250,15 @@ function BookingForm() {
     fetchData()
   }, [productSlug])
 
-  // Reset promo when HH status changes
-  useEffect(() => {
-    if (isHappyHourActive) setSelectedPromoId('')
-  }, [isHappyHourActive])
+  // Reset promo & discount when HH status changes
+    useEffect(() => {
+      if (isHappyHourActive) {
+        setSelectedPromoId('')
+        setDiscount(null)
+        setDiscountInput('')
+        setDiscountError(null)
+      }
+    }, [isHappyHourActive])
 
   // Prevent loop when promo auto-sets product
   const promoAutoRef = useRef(false)
@@ -263,15 +274,18 @@ function BookingForm() {
     }
   }, [selectedPromoId, products])
 
-  // Reset promo & payment when product changes (skip if auto-set by promo)
-  useEffect(() => {
-    if (promoAutoRef.current) {
-      promoAutoRef.current = false
-      return
-    }
-    setSelectedPromoId('')
-    setPaymentMethod('')
-  }, [selectedProductId])
+  // Reset promo, discount & payment when product changes (skip if auto-set by promo)
+    useEffect(() => {
+      if (promoAutoRef.current) {
+        promoAutoRef.current = false
+        return
+      }
+      setSelectedPromoId('')
+      setDiscount(null)
+      setDiscountInput('')
+      setDiscountError(null)
+      setPaymentMethod('')
+    }, [selectedProductId])
 
   // ───── CEK KETERSEDIAAN SAAT PILIH PRODUK + TANGGAL ─────
     useEffect(() => {
@@ -334,13 +348,78 @@ function BookingForm() {
   }, [router])
 
   // Filter promos that still have quota and are within date range
-  const availablePromos = promos.filter(p => {
-    if (p.used >= p.quota) return false
-    if (isHappyHourActive) return false // HH already active, no promo
-    if (p.start_date && bookingDate && bookingDate < p.start_date) return false
-    if (p.end_date && bookingDate && bookingDate > p.end_date) return false
-    return true
-  })
+    const availablePromos = promos.filter(p => {
+      if (p.used >= p.quota) return false
+      if (isHappyHourActive) return false // HH already active, no promo
+      if (discount) return false // kode diskon aktif — tidak bisa stack dengan promo
+      if (p.start_date && bookingDate && bookingDate < p.start_date) return false
+      if (p.end_date && bookingDate && bookingDate > p.end_date) return false
+      return true
+    })
+
+    // ───── TERAPKAN KODE DISKON (validasi server-side via RPC) ─────
+    async function handleApplyDiscount() {
+      setDiscountError(null)
+      const raw = discountInput.trim()
+      if (!raw) {
+        setDiscountError('Masukkan kode diskon.')
+        return
+      }
+      if (!selectedProductId) {
+        setDiscountError('Pilih layanan studio terlebih dahulu.')
+        return
+      }
+      if (!isStudio) {
+        setDiscountError('Kode diskon hanya berlaku untuk booking studio.')
+        return
+      }
+      if (!bookingDate) {
+        setDiscountError('Pilih tanggal booking terlebih dahulu.')
+        return
+      }
+      if (isHappyHourActive) {
+        setDiscountError('Kode diskon tidak bisa digabung dengan Happy Hour.')
+        return
+      }
+      if (selectedPromoId) {
+        setDiscountError('Hapus pilihan promo terlebih dahulu — kode diskon tidak bisa digabung dengan promo.')
+        return
+      }
+
+      setDiscountChecking(true)
+      try {
+        const { data, error } = await supabase.rpc('validate_discount_code', {
+          p_code: raw,
+          p_booking_date: bookingDate,
+          p_phone: customerPhone || '',
+          p_product_id: selectedProductId,
+          p_start_time: startTime || null,
+          p_end_time: endTime || null,
+        })
+        if (error) throw error
+        const res = data && data[0]
+        if (res && res.ok) {
+          setDiscount({
+            id: res.code_id,
+            code: res.code,
+            name: res.name,
+            type: res.type,
+            value: res.value,
+            amount: res.amount,
+            base_price: res.base_price,
+          })
+          setSelectedPromoId('') // tidak bisa stack
+          setDiscountInput('')
+        } else {
+          setDiscountError(res?.err || 'Kode diskon tidak valid.')
+        }
+      } catch (err) {
+        console.error('Discount validation error:', err)
+        setDiscountError('Gagal memproses kode. Silakan coba lagi.')
+      } finally {
+        setDiscountChecking(false)
+      }
+    }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -364,9 +443,17 @@ function BookingForm() {
       return
     }
     if (isHappyHourActive && selectedPromoId) {
-      setError('Promo tidak bisa digabung dengan Happy Hour.')
-      return
-    }
+          setError('Promo tidak bisa digabung dengan Happy Hour.')
+          return
+        }
+        if (isHappyHourActive && discount) {
+          setError('Kode diskon tidak bisa digabung dengan Happy Hour.')
+          return
+        }
+        if (discount && selectedPromoId) {
+          setError('Kode diskon tidak bisa digabung dengan promo.')
+          return
+        }
 
     setSubmitting(true)
 
@@ -495,8 +582,14 @@ function BookingForm() {
       notes: notes.trim() || null,
       status: paymentMethod === 'transfer' ? 'confirmed' : 'pending',
       promo_id: selectedPromoId || null,
-      promo_name: selectedPromoId ? promos.find(p => p.id === selectedPromoId)?.name || null : null,
-    }
+            promo_name: selectedPromoId ? promos.find(p => p.id === selectedPromoId)?.name || null : null,
+            discount_code_id: discount?.id ?? null,
+            discount_code: discount?.code ?? null,
+            discount_type: discount?.type ?? null,
+            discount_value: discount?.value ?? null,
+            discount_amount: discount?.amount ?? null,
+            discount_base_price: discount?.base_price ?? null,
+          }
 
     const { data, error: insertError } = await supabase
       .from('bookings')
@@ -505,10 +598,19 @@ function BookingForm() {
       .single()
 
     if (insertError) {
-      setError('Gagal mengirim booking. Silakan coba lagi.')
-      setSubmitting(false)
-      return
-    }
+          const msg = insertError.message || ''
+          // Pesan dari trigger validasi diskon (server-side) — tampilkan langsung
+          if (msg.includes('Kode diskon') || msg.includes('Harga dasar diskon') || msg.includes('Nilai diskon')) {
+            const clean = msg.split('\n')[0]
+            setError(clean.startsWith('Kode diskon') || clean.startsWith('Harga dasar') || clean.startsWith('Nilai diskon')
+              ? clean
+              : `⚠️ ${clean}`)
+          } else {
+            setError('Gagal mengirim booking. Silakan coba lagi.')
+          }
+          setSubmitting(false)
+          return
+        }
 
     const bookingId = data?.id
 
@@ -682,6 +784,88 @@ function BookingForm() {
                 </div>
               )}
 
+              {/* Kode Diskon — hanya untuk studio, tidak bisa stack dgn promo/HH */}
+              {isStudio && (
+                <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-4 animate-fade-in-up">
+                  <h2 className="text-xl font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <Ticket size={18} />
+                    Kode Diskon
+                  </h2>
+
+                  {isHappyHourActive ? (
+                    <p className="text-xs text-amber-300 leading-relaxed">
+                      💡 Kode diskon tidak bisa digabung dengan Happy Hour. Nonaktifkan Happy Hour (pilih jam di luar {happyHour?.start_time}-{happyHour?.end_time} weekdays) untuk memakai kode diskon.
+                    </p>
+                  ) : discount ? (
+                    <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-teal-500/30 bg-teal-500/10 animate-scale-in">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                          <span className="font-mono text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded-md">{discount.code}</span>
+                          <span className="text-green-400 text-xs">✓ Terpasang</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                          {discount.name} — {discount.type === 'percent' ? `diskon ${discount.value}%` : `diskon ${formatPrice(discount.value)}`} · hemat {formatPrice(discount.amount)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => { setDiscount(null); setDiscountError(null) }}
+                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-red-400 hover:bg-red-500/10 border border-border transition-all shrink-0"
+                      >
+                        <X size={14} />
+                        Hapus
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={discountInput}
+                          onChange={(e) => { setDiscountInput(e.target.value.toUpperCase()); setDiscountError(null) }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyDiscount() } }}
+                          disabled={discountChecking || !!selectedPromoId}
+                          placeholder="Contoh: KRSNA10"
+                          className="flex-1 px-4 py-3 rounded-lg bg-[#171717] border border-[#262626] text-white placeholder:text-muted-foreground text-sm font-mono uppercase focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition-all duration-200 disabled:opacity-50"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyDiscount}
+                          disabled={discountChecking || !!selectedPromoId}
+                          className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-accent/20 text-accent rounded-lg text-sm font-medium hover:bg-accent/30 transition-all duration-200 disabled:opacity-50 shrink-0"
+                        >
+                          {discountChecking ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                              Cek...
+                            </>
+                          ) : (
+                            'Terapkan'
+                          )}
+                        </button>
+                      </div>
+                      {selectedPromoId && (
+                        <p className="text-xs text-amber-300">
+                          Hapus pilihan promo terlebih dahulu jika ingin memakai kode diskon.
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  {discountError && (
+                    <p className="text-xs text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg px-3 py-2">
+                      {discountError}
+                    </p>
+                  )}
+
+                  {!discount && !isHappyHourActive && (
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Punya kode diskon? Masukkan di sini. Berlaku hanya untuk booking studio, maksimal {5}x per nomor WhatsApp, dan tidak bisa digabung dengan promo atau Happy Hour.
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Form card — Data Pemesan */}
               <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up">
                 <h2 className="text-xl font-semibold text-foreground mb-2">
@@ -798,12 +982,14 @@ function BookingForm() {
                 {/* Harga — HH / Normal / Promo */}
                 {selectedProduct && calculatedPrice != null && (
                   <div className={`glass rounded-xl p-5 border animate-scale-in ${
-                    isHappyHourActive
-                      ? 'border-green-500/30 bg-green-500/10'
-                      : selectedPromoId
-                        ? 'border-purple-500/30 bg-purple-500/10'
-                        : 'border-accent/20 bg-accent/5'
-                  }`}>
+                                      isHappyHourActive
+                                        ? 'border-green-500/30 bg-green-500/10'
+                                        : selectedPromoId
+                                          ? 'border-purple-500/30 bg-purple-500/10'
+                                          : discount
+                                            ? 'border-teal-500/30 bg-teal-500/10'
+                                            : 'border-accent/20 bg-accent/5'
+                                    }`}>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
@@ -820,17 +1006,27 @@ function BookingForm() {
                           </span>
                         )}
                         {selectedPromoId && !isHappyHourActive && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-medium">
-                            🎪 Promo
-                          </span>
-                        )}
+                                                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-medium">
+                                                    🎪 Promo
+                                                  </span>
+                                                )}
+                                                {discount && !isHappyHourActive && (
+                                                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-teal-500/20 text-teal-400 text-xs font-medium">
+                                                    🎟️ Kode Diskon
+                                                  </span>
+                                                )}
                       </div>
                     </div>
                     {isHappyHourActive && (
-                      <p className="text-xs text-green-400/70 mt-2">
-                        Diskon Happy Hour weekdays! Harga spesial untuk kamu 🎉
-                      </p>
-                    )}
+                                          <p className="text-xs text-green-400/70 mt-2">
+                                            Diskon Happy Hour weekdays! Harga spesial untuk kamu 🎉
+                                          </p>
+                                        )}
+                                        {discount && (
+                                          <p className="text-xs text-teal-400/80 mt-2">
+                                            Kode {discount.code}: potongan {formatPrice(discount.amount)} — harga layanan {formatPrice(discount.base_price)}, add-on tetap normal
+                                          </p>
+                                        )}
                   </div>
                 )}
 

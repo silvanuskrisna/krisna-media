@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Package, Calendar, MessageSquare, Users, Settings, LogOut, Menu, X, Music, ImageIcon, Tag, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, Package, Calendar, MessageSquare, Users, Settings, LogOut, Menu, X, Music, ImageIcon, Tag, ClipboardList, Percent } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const navLinks = [
@@ -11,6 +11,7 @@ const navLinks = [
   { href: '/admin/members', label: 'Member', icon: Users },
   { href: '/admin/products', label: 'Produk', icon: Package },
   { href: '/admin/promos', label: 'Promo', icon: Tag },
+  { href: '/admin/discount-codes', label: 'Kode Diskon', icon: Percent },
   { href: '/admin/bookings', label: 'Pesanan', icon: Calendar },
   { href: '/admin/templates', label: 'Template', icon: ClipboardList },
   { href: '/admin/testimonials', label: 'Testimoni', icon: MessageSquare },

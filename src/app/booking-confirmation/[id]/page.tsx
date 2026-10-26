@@ -255,6 +255,24 @@ export default async function BookingConfirmationPage({
                 </div>
               )}
 
+              {/* Kode Diskon */}
+              {booking.discount_code && (
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-teal-500/10 flex items-center justify-center text-teal-400 shrink-0 mt-0.5">
+                    <Tag size={16} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+                      Kode Diskon
+                    </p>
+                    <p className="text-foreground font-medium">
+                      {booking.discount_code}{' '}
+                      <span className="text-teal-400">−{formatPrice(booking.discount_amount || 0)}</span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Promo */}
               {booking.promo_name && (
                 <div className="flex items-start gap-3">
