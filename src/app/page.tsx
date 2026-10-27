@@ -18,7 +18,7 @@ async function getFeaturedProducts(): Promise<Product[]> {
     .eq('is_active', true)
     .eq('featured', true)
     .order('sort_order', { ascending: true })
-    .limit(6)
+    .limit(3)
 
   return data ?? []
 }
@@ -35,16 +35,8 @@ async function getTestimonials(): Promise<Testimonial[]> {
   return data ?? []
 }
 
-async function getSiteSettings(): Promise<SiteSettings> {
-  const sb = await createSupabaseServer()
-  const { data } = await sb
-    .from('site_settings')
-    .select('value')
-    .eq('key', 'whatsapp')
-    .single()
-
-  const whatsapp = (data?.value as string) ?? '+628****1097'
-  return { whatsapp }
+function getSiteSettings(): SiteSettings {
+  return { whatsapp: '628115191097' }
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -233,7 +225,7 @@ async function LandingPage() {
   return (
     <>
       {/* ===== HERO SECTION ===== */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+      <section className="relative min-h-[70vh] md:min-h-[90vh] flex items-center overflow-hidden pt-24 md:pt-0">
         {/* Mesh + noise background */}
         <div className="absolute inset-0 bg-mesh-grid opacity-40 bg-noise" />
 
@@ -268,20 +260,20 @@ async function LandingPage() {
               </p>
 
               <div className="animate-fade-in delay-300 flex flex-col sm:flex-row gap-3">
-                <Link
-                  href="/services"
-                  className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white font-medium px-7 py-3 rounded-lg transition-all duration-300 shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-0.5 text-sm"
-                >
-                  Jelajahi Layanan
-                  <ArrowRight size={16} />
-                </Link>
-                <Link
-                  href="/booking"
-                  className="inline-flex items-center justify-center gap-2 border border-border hover:border-accent/50 text-foreground font-medium px-7 py-3 rounded-lg transition-all duration-300 hover:-translate-y-0.5 text-sm glass"
-                >
-                  Booking Sekarang
-                </Link>
-              </div>
+                              <Link
+                                href="/services"
+                                className="inline-flex items-center justify-center gap-2 border border-border hover:border-accent/50 text-foreground font-medium px-6 py-3.5 rounded-lg transition-all duration-300 hover:-translate-y-0.5 text-sm glass"
+                              >
+                                Jelajahi Layanan
+                                <ArrowRight size={16} />
+                              </Link>
+                              <Link
+                                href="/booking"
+                                className="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white font-medium px-6 py-3.5 rounded-lg transition-all duration-300 shadow-lg shadow-accent/25 hover:shadow-accent/40 hover:-translate-y-0.5 text-sm"
+                              >
+                                Booking Sekarang
+                              </Link>
+                            </div>
 
             </div>
 
@@ -386,9 +378,9 @@ async function LandingPage() {
 
                   {/* CTA */}
                   <Link
-                    href="/booking"
-                    className="inline-flex items-center justify-center gap-2 w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-all duration-300"
-                  >
+                                      href="/booking"
+                                      className="inline-flex items-center justify-center gap-2 w-full bg-accent hover:bg-accent-hover text-white text-sm font-medium px-5 py-3 rounded-lg transition-all duration-300"
+                                    >
                     Booking Sekarang
                     <ChevronRight size={16} />
                   </Link>

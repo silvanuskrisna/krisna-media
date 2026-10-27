@@ -853,23 +853,18 @@ function BookingForm() {
                   )}
 
                   {discountError && (
-                    <p className="text-xs text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg px-3 py-2">
-                      {discountError}
-                    </p>
-                  )}
+                                      <p className="text-xs text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg px-3 py-2">
+                                        {discountError}
+                                      </p>
+                                    )}
 
-                  {!discount && !isHappyHourActive && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Punya kode diskon? Masukkan di sini. Berlaku hanya untuk booking studio, maksimal {5}x per nomor WhatsApp, dan tidak bisa digabung dengan promo atau Happy Hour.
-                    </p>
-                  )}
-                </div>
-              )}
+                                  </div>
+                                )}
 
-              {/* Form card — Data Pemesan */}
-              <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up">
-                <h2 className="text-xl font-semibold text-foreground mb-2">
-                  Data Pemesan
+                                {/* Form card — Data Pemesan */}
+                                <div className="glass rounded-2xl p-6 md:p-10 border border-border space-y-6 animate-fade-in-up">
+                                  <h2 className="text-xl font-semibold text-foreground mb-2">
+                                    Data Pemesan
                 </h2>
 
                 <div>

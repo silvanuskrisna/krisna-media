@@ -4,9 +4,9 @@ import { Phone, Mail, MapPin, Globe, Camera, Video } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 const socialLinks = [
-  { label: 'Instagram', icon: Camera, href: '#' },
-  { label: 'Facebook', icon: Globe, href: '#' },
-  { label: 'YouTube', icon: Video, href: '#' },
+  { label: 'Instagram', icon: Camera, href: 'https://www.instagram.com/krisna.media.bdj' },
+  { label: 'Facebook', icon: Globe, href: 'https://www.facebook.com/krisna.media.bdj' },
+  { label: 'YouTube', icon: Video, href: 'https://www.youtube.com/@krisnamediayt' },
 ]
 
 export default function Footer() {

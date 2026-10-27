@@ -110,7 +110,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="absolute top-full left-0 right-0 glass md:hidden animate-scale-in">
+        <div className="absolute top-full left-0 right-0 glass md:hidden animate-scale-in max-h-[80vh] overflow-y-auto">
           <div className="flex flex-col p-6 gap-4">
             {navLinks
             .filter(link => !(link.href === '/services' && loggedIn))
@@ -120,7 +120,7 @@ export default function Navbar() {
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'text-white/80 hover:text-white transition-colors py-2',
+                  'text-white/80 hover:text-white transition-colors py-3',
                   pathname === link.href && 'text-white font-medium'
                 )}
               >
@@ -133,7 +133,7 @@ export default function Navbar() {
                 <hr className="border-border/60" />
                 <button
                   onClick={() => { handleLogout(); setMobileOpen(false) }}
-                  className="inline-flex items-center justify-center gap-2 border border-red-500/40 text-red-400 hover:text-red-300 hover:border-red-500 font-medium px-5 py-2.5 rounded-lg transition-all duration-300 text-sm w-full"
+                  className="inline-flex items-center justify-center gap-2 border border-red-500/40 text-red-400 hover:text-red-300 hover:border-red-500 font-medium px-5 py-3 rounded-lg transition-all duration-300 text-sm w-full"
                 >
                   <LogOut size={16} />
                   Keluar
@@ -143,7 +143,7 @@ export default function Navbar() {
               <Link
                 href="/auth"
                 onClick={() => setMobileOpen(false)}
-                className="inline-flex items-center justify-center gap-1.5 bg-accent hover:bg-accent-hover text-white font-medium px-5 py-2.5 rounded-lg transition-all duration-300 text-sm w-full mt-1"
+                className="inline-flex items-center justify-center gap-1.5 bg-accent hover:bg-accent-hover text-white font-medium px-5 py-3 rounded-lg transition-all duration-300 text-sm w-full mt-1"
               >
                 Masuk / Daftar
               </Link>
