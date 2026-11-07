@@ -555,7 +555,7 @@ function BookingForm() {
     }
 
     // ───── HITUNG TOTAL HARGA ─────
-    const finalTotalPrice = (calculatedPrice || 0) + addonTotal
+        const finalTotalPrice = Math.max(0, (calculatedPrice || 0) + addonTotal - (discount?.amount || 0))
 
     // ───── GENERATE BOOKING CODE ─────
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'

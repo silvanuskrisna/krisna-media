@@ -95,6 +95,7 @@ export default function AdminBookingDetail() {
   }
 
   const status = statusBadge[booking.status]
+  const addonTotal = addons.reduce((sum, a) => sum + (a.subtotal || a.unit_price || 0), 0)
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -177,16 +178,6 @@ export default function AdminBookingDetail() {
             </div>
           )}
 
-          <div className="flex items-start gap-3">
-            <Tag size={16} className="text-muted-foreground mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs text-muted-foreground">Total Harga</p>
-              <p className="text-sm text-foreground font-semibold">
-                {booking.total_price ? formatPrice(booking.total_price) : '-'}
-              </p>
-            </div>
-          </div>
-
           {booking.discount_code && (
                       <div className="flex items-start gap-3">
                         <Tag size={16} className="text-muted-foreground mt-0.5 shrink-0" />
@@ -200,7 +191,20 @@ export default function AdminBookingDetail() {
                       </div>
                     )}
 
-                    {booking.payment_method && (
+                    {/* Total — koreksi jika diskon */}
+                              <div className="flex items-start gap-3">
+                                <Tag size={16} className="text-muted-foreground mt-0.5 shrink-0" />
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Total Harga</p>
+                                  <p className="text-sm text-foreground font-semibold">
+                                    {booking.discount_code
+                                      ? formatPrice((booking.discount_base_price || 0) - (booking.discount_amount || 0) + addonTotal)
+                                      : formatPrice(booking.total_price || 0)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {booking.payment_method && (
                       <div className="flex items-start gap-3">
                         <Tag size={16} className="text-muted-foreground mt-0.5 shrink-0" />
                         <div>
